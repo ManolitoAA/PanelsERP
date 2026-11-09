@@ -69,7 +69,7 @@ export default function OrderForm({ clientId, onSuccess }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
       {items.map((it, idx) => (
         <div key={idx} className="grid grid-cols-2 md:grid-cols-5 gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200 text-sm">
           <input placeholder="Producto" required value={it.product_name}
@@ -91,13 +91,13 @@ export default function OrderForm({ clientId, onSuccess }) {
           </p>
         </div>
       ))}
-      <button type="button" onClick={addItem} className="text-sm text-blue-600 hover:underline self-start">+ Añadir línea</button>
+      <button type="button" onClick={addItem} className="text-sm text-brand-600 hover:underline self-start">+ Añadir línea</button>
       <div className="flex justify-between items-center border-t pt-3">
         <p className="text-sm text-slate-600">
           Total: <strong>{totals.subtotal.toFixed(2)} €</strong> · Beneficio: <strong className="text-emerald-700">{totals.profit.toFixed(2)} €</strong>
         </p>
         <button type="submit" disabled={submitting}
-          className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-60">
+          className="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-60 transition-colors">
           {submitting ? 'Guardando…' : 'Crear pedido'}
         </button>
       </div>

@@ -112,3 +112,23 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 - `npm run test:e2e` (desde `frontend/`) simula el inicio de sesión del comercial, creación de cliente, cálculo de pedido y verificación de interfaz.
 
 **Hecho cuando:** La aplicación se abre en navegador, todos los formularios funcionan y la prueba de Playwright pasa al 100%.
+
+---
+
+## Fase 7 · Postgres Docker, Dashboard ERP, Navegación y UI
+
+> *Detalle:* [`docs/superpowers/plans/2026-11-09-panelserp-dashboard-docker-ui.md`](docs/superpowers/plans/2026-11-09-panelserp-dashboard-docker-ui.md)
+
+**Objetivo:** Postgres en Docker, dashboard de beneficios por trabajador (mes y día), barra lateral y pantallas de leads, pedidos, proveedores y plantillas con interfaz cuidada.
+
+**Tareas:**
+- [x] Postgres 16 en `docker-compose.yml` (puerto 5433 por defecto) con `psycopg` y prueba contra Postgres real.
+- [x] Estado `lead` / `cliente` en clientes con filtro.
+- [x] `GET /api/stats` (totales, por mes, por día) con aislamiento por comercial.
+- [x] Layout con barra lateral, sistema visual (Tailwind `brand`, `ui.jsx`) y navegación responsive.
+- [x] Páginas Clientes/Leads, Pedidos (listado), Proveedores y Plantillas (modal copiar/enviar).
+- [x] Dashboard con tarjetas y gráficos de barras, filtro por comercial para jefe/admin.
+
+**Pruebas:** `pytest backend` (24 + 1 Postgres opcional) y `npm run test:e2e` (13) en verde.
+
+**Hecho cuando:** todo lo anterior pasa y `astro build` compila.

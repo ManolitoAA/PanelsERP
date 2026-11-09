@@ -157,3 +157,14 @@ test('la barra lateral resalta la sección activa y permite navegar', async ({ p
   await expect(nav.getByRole('link', { name: 'Clientes' })).toHaveAttribute('aria-current', 'page');
   await expect(nav.getByRole('link', { name: 'Dashboard' })).not.toHaveAttribute('aria-current', 'page');
 });
+
+test('la app es usable en móvil: el menú se abre y navega', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await login(page, 'comercial1@panelserp.com');
+  await expect(page.getByRole('link', { name: 'Clientes' })).toBeHidden();
+  await page.getByRole('button', { name: 'Menú' }).click();
+  await page.getByRole('link', { name: 'Clientes' }).click();
+  await expect(page).toHaveURL(/.*clients/);
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+  expect(overflow).toBe(false);
+});
