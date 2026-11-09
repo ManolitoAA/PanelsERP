@@ -1,8 +1,8 @@
 import React from 'react';
 
-export function Card({ title, children, className = '' }) {
+export function Card({ title, children, className = '', testId }) {
   return (
-    <section className={`bg-white rounded-2xl shadow-card border border-slate-100 p-5 ${className}`}>
+    <section data-testid={testId} className={`bg-white rounded-2xl shadow-card border border-slate-100 p-5 ${className}`}>
       {title && <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">{title}</h3>}
       {children}
     </section>
@@ -12,8 +12,9 @@ export function Card({ title, children, className = '' }) {
 const TONES = { default: 'text-slate-900', good: 'text-emerald-600', brand: 'text-brand-600' };
 
 export function StatCard({ label, value, tone = 'default' }) {
+  const id = `stat-${label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-')}`;
   return (
-    <Card>
+    <Card testId={id}>
       <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">{label}</p>
       <p className={`mt-2 text-3xl font-bold tabular-nums ${TONES[tone]}`}>{value}</p>
     </Card>

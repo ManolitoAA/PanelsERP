@@ -11,6 +11,7 @@ def test_seed_creates_users_once():
         seed(s)  # idempotente
         users = s.exec(select(User)).all()
         assert {u.role for u in users} == set(RoleEnum)
-        assert len(users) == 3
+        assert len(users) == 4
         com = s.exec(select(User).where(User.email == "comercial1@panelserp.com")).one()
         assert verify_password("password123", com.hashed_password)
+        assert s.exec(select(User).where(User.email == "comercial2@panelserp.com")).one().role == RoleEnum.COMERCIAL

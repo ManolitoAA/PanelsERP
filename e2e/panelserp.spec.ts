@@ -114,6 +114,31 @@ test.describe.serial('flujo comercial y supervisión', () => {
     await expect(page.getByRole('alert')).toContainText(/sintaxis|syntax/i);
   });
 
+  test('dashboard del comercial muestra sus totales (Caso 1)', async ({ page }) => {
+    await login(page, 'comercial1@panelserp.com');
+    await expect(page.getByTestId('stat-facturado')).toContainText('3000.00');
+    await expect(page.getByTestId('stat-beneficio-neto')).toContainText('1200.00');
+    await expect(page.getByTestId('stat-pedidos')).toContainText('1');
+    await expect(page.getByRole('heading', { name: 'Ventas por día' })).toBeVisible();
+    await expect(page.getByRole('combobox', { name: 'Comercial' })).toHaveCount(0);
+  });
+
+  test('dashboard: comercial sin pedidos ve Sin datos', async ({ page }) => {
+    await login(page, 'comercial2@panelserp.com');
+    await expect(page.getByTestId('stat-pedidos')).toContainText('0');
+    await expect(page.getByText('Sin datos').first()).toBeVisible();
+  });
+
+  test('dashboard: el jefe ve todo y filtra por comercial', async ({ page }) => {
+    await login(page, 'jefe@panelserp.com');
+    await expect(page.getByTestId('stat-facturado')).toContainText('3000.00');
+    const sel = page.getByRole('combobox', { name: 'Comercial' });
+    await sel.selectOption({ label: 'Comercial Dos' });
+    await expect(page.getByTestId('stat-pedidos')).toContainText('0');
+    await sel.selectOption({ label: 'Comercial Uno' });
+    await expect(page.getByTestId('stat-facturado')).toContainText('3000.00');
+  });
+
   test('jefe ve el panel de supervisión con facturación del comercial (Caso 2)', async ({ page }) => {
     await login(page, 'jefe@panelserp.com');
     await expect(page.getByRole('heading', { name: 'Supervisión' })).toBeVisible();

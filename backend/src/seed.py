@@ -6,6 +6,7 @@ from src.models import RoleEnum, User
 
 DEMO_USERS = [
     ("comercial1@panelserp.com", "Comercial Uno", RoleEnum.COMERCIAL),
+    ("comercial2@panelserp.com", "Comercial Dos", RoleEnum.COMERCIAL),
     ("jefe@panelserp.com", "Jefe Global", RoleEnum.JEFE),
     ("admin@panelserp.com", "Admin RRHH", RoleEnum.ADMIN_RRHH),
 ]
