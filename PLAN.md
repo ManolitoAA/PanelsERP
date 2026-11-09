@@ -87,9 +87,9 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 **Objetivo:** Directorio de proveedores y renderizado de plantillas Jinja2 para envío directo o copia al portapapeles.
 
 **Tareas:**
-- [ ] Crear router de proveedores `backend/src/routers/suppliers.py`.
-- [ ] Crear router de plantillas `backend/src/routers/templates.py`.
-- [ ] Implementar renderizado con Jinja2 y servicio de envío de email en segundo plano (`BackgroundTasks`) en `backend/src/services/mailer.py`.
+- [x] Crear router de proveedores `backend/src/routers/suppliers.py`.
+- [x] Crear router de plantillas `backend/src/routers/templates.py`.
+- [x] Implementar renderizado con Jinja2 y servicio de envío de email en segundo plano (`BackgroundTasks`) en `backend/src/services/mailer.py`.
 
 **Pruebas:**
 - `pytest backend/tests/test_templates.py` valida la sustitución correcta de variables en asunto y cuerpo, así como la respuesta adecuada para copiar al portapapeles.
