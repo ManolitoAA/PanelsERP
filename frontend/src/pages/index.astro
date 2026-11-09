@@ -1,17 +1,13 @@
 ---
+import Layout from '../layouts/Layout.astro';
 import LoginForm from '../components/LoginForm.jsx';
 ---
-<html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>PanelsERP – Login</title>
-  </head>
-  <body class="bg-slate-100 min-h-screen flex items-center justify-center">
-    <main class="w-full max-w-sm bg-white rounded-2xl shadow-lg p-8">
-      <h1 class="text-2xl font-bold text-blue-700 mb-1 text-center">PanelsERP</h1>
+<Layout title="Login">
+  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-900 to-brand-600 p-4">
+    <main class="w-full max-w-sm bg-white rounded-2xl shadow-xl p-8">
+      <h1 class="text-3xl font-bold text-brand-700 mb-1 text-center">PanelsERP</h1>
       <p class="text-sm text-slate-500 text-center mb-6">Gestión comercial y exportación</p>
       <LoginForm client:only="react" />
     </main>
-  </body>
-</html>
+  </div>
+</Layout>

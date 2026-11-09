@@ -62,3 +62,13 @@ test.describe.serial('flujo comercial y supervisión', () => {
     await expect(row).toContainText('1200.00');
   });
 });
+
+test('la barra lateral resalta la sección activa y permite navegar', async ({ page }) => {
+  await login(page, 'comercial1@panelserp.com');
+  const nav = page.getByRole('navigation');
+  await expect(nav.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('aria-current', 'page');
+  await nav.getByRole('link', { name: 'Clientes' }).click();
+  await expect(page).toHaveURL(/.*clients/);
+  await expect(nav.getByRole('link', { name: 'Clientes' })).toHaveAttribute('aria-current', 'page');
+  await expect(nav.getByRole('link', { name: 'Dashboard' })).not.toHaveAttribute('aria-current', 'page');
+});

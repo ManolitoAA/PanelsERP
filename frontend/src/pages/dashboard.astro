@@ -1,13 +1,7 @@
 ---
+import Layout from '../layouts/Layout.astro';
 import Dashboard from '../components/Dashboard.jsx';
 ---
-<html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>PanelsERP – Dashboard</title>
-  </head>
-  <body class="bg-slate-50 min-h-screen">
-    <Dashboard client:only="react" />
-  </body>
-</html>
+<Layout title="Dashboard">
+  <Dashboard client:only="react" />
+</Layout>

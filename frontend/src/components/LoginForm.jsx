@@ -51,7 +51,7 @@ export default function LoginForm() {
           required
           value={email}
           onChange={e => setEmail(e.target.value)}
-          className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </label>
       <label className="flex flex-col gap-1 text-sm font-medium text-slate-700">
@@ -63,13 +63,13 @@ export default function LoginForm() {
           required
           value={password}
           onChange={e => setPassword(e.target.value)}
-          className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </label>
       <button
         type="submit"
         disabled={loading}
-        className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold rounded-lg py-2 transition-colors"
+        className="bg-brand-600 hover:bg-brand-700 disabled:opacity-60 text-white font-semibold rounded-lg py-2 transition-colors"
       >
         {loading ? 'Entrando...' : 'Entrar'}
       </button>
