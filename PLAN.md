@@ -24,9 +24,9 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 **Objetivo:** Definir el esquema relacional con SQLModel (User, RoleEnum, Client, Order, OrderItem, Supplier, Template) y la lógica matemática de márgenes.
 
 **Tareas:**
-- [ ] Configurar conexión a base de datos (`backend/src/db.py`).
-- [ ] Implementar modelos SQLModel en `backend/src/models.py`.
-- [ ] Implementar cálculo de subtotal y beneficio neto en las líneas de pedido.
+- [x] Configurar conexión a base de datos (`backend/src/db.py`).
+- [x] Implementar modelos SQLModel en `backend/src/models.py`.
+- [x] Implementar cálculo de subtotal y beneficio neto en las líneas de pedido.
 
 **Pruebas:**
 - `pytest backend/tests/test_models.py` valida la persistencia en base de datos y el cálculo del Caso 1 del spec (200 uds a 15 € con coste 9 € = 3.000 € facturación y 1.200 € beneficio neto).
