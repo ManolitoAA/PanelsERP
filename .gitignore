@@ -1,0 +1,21 @@
+# Environment
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+*.sqlite3
+
+# Node / Astro
+node_modules/
+dist/
+.astro/
+
+# Graphify & tools
+graphify-out/
+.DS_Store
