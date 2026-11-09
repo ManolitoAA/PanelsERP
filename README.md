@@ -1,46 +1,103 @@
-# Plantilla del curso de vibecoding
+# PanelsERP
 
-Este repositorio es el punto de partida de tu proyecto. No trae código de aplicación, sino las instrucciones para que tu agente (Claude Code u OpenCode) trabaje con orden. Sirve para una página HTML, una app de Streamlit en Python u otra cosa.
+ERP y CRM web ligero para una pyme de exportación de protecciones de polietileno: leads y clientes, pedidos con cálculo de margen, proveedores, plantillas de mensajes y un dashboard de beneficios, con control de acceso por roles. Más detalle en `docs/project-info.md`.
 
-## Cómo empezar
+## Qué incluye
 
-1. Pulsa **Use this template** en GitHub y clona tu nuevo repositorio.
-2. Rellena `docs/project-info.md`.
-3. Copia `.env.example` a `.env` (`cp .env.example .env`; en Windows, `copy .env.example .env`).
-4. Abre Claude Code u OpenCode en la carpeta.
+- **Dashboard:** facturación y beneficio neto por mes y ventas por día. Cada comercial ve lo suyo; jefe y administración/RRHH ven todo y filtran por comercial. Los beneficios negativos se dibujan hacia abajo, en rojo, bajo el eje del 0. Un valor 0 se ve como una marca sobre el eje, y un gráfico vacío significa que no hay datos.
+- **Clientes y leads:** cada registro es `lead` o `cliente`, con filtro y cambio de estado. RRHH solo lee.
+- **Pedidos:** listado y alta con cálculo automático. Tú pones precio y coste; el margen (`(precio − coste) / precio`) se muestra en un campo de solo lectura.
+- **Proveedores** y **plantillas de mensajes** (variables Jinja2, vista previa, copiar al portapapeles y envío por email).
+- **Roles:** `comercial` (solo lo suyo), `jefe` (todo) y `admin_rrhh` (lectura de facturación y clientes).
 
-## Qué hace cada archivo
+> **Fechas en UTC.** Los gráficos agrupan los pedidos por mes y día en hora UTC, no en hora de España. Un pedido hecho a las 00:30 en España puede contar en el día anterior. El dashboard lo indica en pantalla.
 
-- `AGENTS.md`: las normas de trabajo del agente.
-- `CLAUDE.md`: hace que Claude Code lea `AGENTS.md`.
-- `PLAN.md`: las fases del proyecto y lo que falta por hacer.
-- `README.md`: esta guía.
-- `.env.example`: los nombres de las claves, sin valores.
-- `.gitignore`: lo que git no debe subir, como `.env`.
-- `docs/project-info.md`: la descripción de tu app.
-- `e2e/README.md`: dónde van los tests de extremo a extremo.
+## Tecnología
 
-## Los dos archivos de contexto
+Backend: Python 3.12+, FastAPI y SQLModel. Frontend: Astro, React y Tailwind. Base de datos: PostgreSQL (Docker) o SQLite. Pruebas: pytest y Playwright.
 
-- `docs/project-info.md` dice **qué es la app** y cambia en cada proyecto.
-- `AGENTS.md` dice **cómo se trabaja** y es igual en todos.
+## Puesta en marcha
 
-## Primer prompt sugerido
+Requisitos: Python 3.12+, Node.js y Docker (solo si usas Postgres).
 
-> Lee AGENTS.md, docs/project-info.md y PLAN.md, y propón el plan para la Fase 0. No escribas código todavía.
+```bash
+python3 -m venv .venv && .venv/bin/pip install -e "backend[dev]"
+cd frontend && npm install && npx playwright install chromium && cd ..
+cp .env.example .env
+```
 
-## Recuerda
+### Opción A: Postgres en Docker
 
-El push lo haces tú, después de revisar con `git status` que `.env` no aparece.
+1. Rellena en `.env` `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` y `DATABASE_URL` (por defecto el puerto 5433; cámbialo con `POSTGRES_PORT`).
+2. Arranca la base de datos:
 
-Si usas GitHub, instala `gh` y haz `gh auth login` una vez. Así el agente podrá abrir pull requests, siempre pidiéndote permiso antes.
+```bash
+docker compose up -d --wait
+```
 
-## Base de datos Postgres (Docker, local)
+3. Arranca el backend (crea las tablas y los usuarios de demo):
 
-1. `cp .env.example .env` y rellena `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` y `DATABASE_URL` (puerto 5433 por defecto; cámbialo con `POSTGRES_PORT`).
-2. `docker compose up -d --wait`
-3. `cd backend && set -a && . ../.env && set +a && ../.venv/bin/python -m src.seed && ../.venv/bin/uvicorn src.main:app --reload --port 8000`
-4. `cd frontend && npm run dev`
+```bash
+cd backend && set -a && . ../.env && set +a && ../.venv/bin/python -m src.seed && ../.venv/bin/uvicorn src.main:app --reload --port 8000
+```
 
-Sin `DATABASE_URL` el backend usa SQLite (`backend/panelserp.db`). `docker compose down -v` borra los datos.
-Prueba contra Postgres real: `TEST_POSTGRES_URL=$DATABASE_URL .venv/bin/pytest backend/tests/test_postgres.py`.
+### Opción B: SQLite (sin Docker)
+
+Sin `DATABASE_URL` el backend usa el archivo `backend/panelserp.db`:
+
+```bash
+cd backend && ../.venv/bin/python -m src.seed && ../.venv/bin/uvicorn src.main:app --reload --port 8000
+```
+
+### Frontend
+
+```bash
+cd frontend && npm run dev
+```
+
+Abre http://localhost:4321.
+
+### Usuarios de demo
+
+`comercial1@panelserp.com`, `comercial2@panelserp.com`, `jefe@panelserp.com` y `admin@panelserp.com`, todos con la contraseña `password123`. Son solo para desarrollo: no los uses en producción.
+
+## Sin migraciones: si cambia el modelo
+
+El proyecto no usa migraciones. `create_all` crea tablas nuevas pero no añade columnas a las existentes. Si actualizas el código y la API devuelve 500 por una columna que falta (por ejemplo `status` en clientes), recrea la base de datos de desarrollo:
+
+- **SQLite:** borra `backend/panelserp.db` y vuelve a ejecutar el seed.
+- **Postgres:** `docker compose down -v` borra el volumen y todos los datos. Después, `docker compose up -d --wait` y el seed.
+
+## Pruebas
+
+```bash
+.venv/bin/pytest backend -v
+```
+
+Usa SQLite en memoria, no necesita nada levantado. Las fixtures compartidas están en `backend/tests/conftest.py`. Para probar contra Postgres real:
+
+```bash
+set -a && . ./.env && set +a && TEST_POSTGRES_URL=$DATABASE_URL .venv/bin/pytest backend/tests/test_postgres.py -v
+```
+
+Pruebas de extremo a extremo (Playwright):
+
+```bash
+cd frontend && npm run test:e2e
+```
+
+Levantan su propio backend (puerto 8001, SQLite temporal) y su frontend (puerto 4322), así que no tocan tu base de datos ni tus servidores. Para generar capturas de revisión visual: `SHOTS=1 npm run test:e2e -- screenshots`.
+
+## Estructura
+
+- `backend/src/`: API (`routers/`), lógica de negocio (`services/`), modelos, autenticación y `seed.py`.
+- `backend/tests/`: pruebas del backend, junto al código.
+- `frontend/src/`: páginas Astro (`pages/`) y componentes React (`components/`).
+- `e2e/`: pruebas de extremo a extremo.
+- `docs/`: información del proyecto y planes de implementación.
+- `PLAN.md`: fases del proyecto.
+- `docker-compose.yml`: PostgreSQL local.
+
+## Normas de trabajo y git
+
+`AGENTS.md` recoge cómo trabaja el agente (`CLAUDE.md` lo enlaza). El push lo haces tú, después de revisar con `git status` que `.env` no aparece. Si usas GitHub, instala `gh` y haz `gh auth login` una vez.

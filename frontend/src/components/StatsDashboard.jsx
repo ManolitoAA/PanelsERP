@@ -6,6 +6,7 @@ const eur = n => `${n.toFixed(2)} €`;
 
 export default function StatsDashboard({ supervisor }) {
   const [commercials, setCommercials] = useState([]);
+  const [commercialsError, setCommercialsError] = useState(false);
   const [selected, setSelected] = useState('');
   const [stats, setStats] = useState(null);
   const [error, setError] = useState('');
@@ -13,7 +14,9 @@ export default function StatsDashboard({ supervisor }) {
   useEffect(() => {
     if (!supervisor) return;
     fetch(`${API_BASE}/api/reports/billing`, { headers: authHeaders() })
-      .then(r => r.json()).then(setCommercials).catch(() => {});
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(setCommercials)
+      .catch(() => setCommercialsError(true));
   }, [supervisor]);
 
   useEffect(() => {
@@ -38,19 +41,23 @@ export default function StatsDashboard({ supervisor }) {
           </select>
         </label>
       )}
+      {commercialsError && (
+        <p role="alert" className="text-sm text-red-600">No se pudo cargar la lista de comerciales; el filtro no está disponible.</p>
+      )}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
         <StatCard label="Facturado" value={eur(stats.totals.billed)} tone="brand" />
         <StatCard label="Beneficio neto" value={eur(stats.totals.profit)} tone="good" />
         <StatCard label="Pedidos" value={String(stats.totals.orders)} />
       </div>
+      <p className="text-xs text-slate-500">Los meses y días de los gráficos se calculan en hora UTC.</p>
       <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">
         <Card><h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Facturación por mes</h2>
-          <BarChart unit=" €" data={stats.monthly.map(m => ({ label: m.month, value: m.billed }))} /></Card>
+          <BarChart name="facturacion" unit=" €" data={stats.monthly.map(m => ({ label: m.month, value: m.billed }))} /></Card>
         <Card><h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Beneficio neto por mes</h2>
-          <BarChart unit=" €" data={stats.monthly.map(m => ({ label: m.month, value: m.profit }))} /></Card>
+          <BarChart name="beneficio" unit=" €" data={stats.monthly.map(m => ({ label: m.month, value: m.profit }))} /></Card>
       </div>
       <Card><h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Ventas por día</h2>
-        <BarChart data={stats.daily.map(d => ({ label: d.day, value: d.sales }))} /></Card>
+        <BarChart name="ventas" data={stats.daily.map(d => ({ label: d.day.slice(5), value: d.sales }))} /></Card>
     </div>
   );
 }

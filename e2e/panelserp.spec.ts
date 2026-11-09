@@ -168,3 +168,44 @@ test('la app es usable en móvil: el menú se abre y navega', async ({ page }) =
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   expect(overflow).toBe(false);
 });
+
+const STATS_STUB = {
+  totals: { billed: 200, profit: 20, orders: 3 },
+  monthly: [
+    { month: '2026-01', billed: 100, profit: 50 },
+    { month: '2026-02', billed: 100, profit: -30 },
+    { month: '2026-03', billed: 0, profit: 0 },
+  ],
+  daily: [],
+};
+
+test('dashboard: si falla /api/reports/billing la página no se rompe y avisa', async ({ page }) => {
+  await page.route('**/api/reports/billing', r => r.fulfill({ status: 500, body: 'boom' }));
+  await login(page, 'jefe@panelserp.com');
+  await expect(page.getByTestId('stat-facturado')).toBeVisible();
+  await expect(page.getByRole('alert')).toContainText('No se pudo cargar la lista de comerciales');
+});
+
+test('dashboard: beneficio negativo hacia abajo, cero como marca y sin datos vacío', async ({ page }) => {
+  await page.route('**/api/stats**', r => r.fulfill({ json: STATS_STUB }));
+  await login(page, 'comercial1@panelserp.com');
+  const zero = page.getByTestId('zero-line-beneficio').first();
+  const pos = page.getByTestId('bar-beneficio-2026-01');
+  const neg = page.getByTestId('bar-beneficio-2026-02');
+  const flat = page.getByTestId('bar-beneficio-2026-03');
+  await expect(neg).toHaveAttribute('data-kind', 'negative');
+  await expect(pos).toHaveAttribute('data-kind', 'positive');
+  await expect(flat).toHaveAttribute('data-kind', 'zero');
+  const z = (await zero.boundingBox())!;
+  const p = (await pos.boundingBox())!;
+  const n = (await neg.boundingBox())!;
+  expect(p.y + p.height).toBeLessThanOrEqual(z.y + 1.5); // positiva por encima del eje
+  expect(n.y).toBeGreaterThanOrEqual(z.y - 1.5); // negativa por debajo del eje
+  expect(n.height).toBeGreaterThan(5);
+  await expect(page.getByText('Sin datos').first()).toBeVisible(); // ventas por día vacías
+});
+
+test('dashboard: avisa de que las fechas están en UTC', async ({ page }) => {
+  await login(page, 'comercial1@panelserp.com');
+  await expect(page.getByText(/UTC/).first()).toBeVisible();
+});

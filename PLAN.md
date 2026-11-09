@@ -129,6 +129,6 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 - [x] Páginas Clientes/Leads, Pedidos (listado), Proveedores y Plantillas (modal copiar/enviar).
 - [x] Dashboard con tarjetas y gráficos de barras, filtro por comercial para jefe/admin.
 
-**Pruebas:** `pytest backend` (24 + 1 Postgres opcional) y `npm run test:e2e` (13) en verde.
+**Pruebas:** `pytest backend` (28 + 1 Postgres opcional) y `npm run test:e2e` (16) en verde.
 
 **Hecho cuando:** todo lo anterior pasa y `astro build` compila.

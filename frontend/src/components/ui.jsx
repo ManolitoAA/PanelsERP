@@ -60,20 +60,48 @@ export function Empty({ children = 'Sin datos' }) {
   return <p className="text-sm text-slate-400 py-6 text-center">{children}</p>;
 }
 
-export function BarChart({ data, unit = '' }) {
+const CHART_HEIGHT = 180;
+const fmt = (v, unit) => `${v.toLocaleString('es-ES')}${unit}`;
+
+// Columnas con eje en el 0: positivas hacia arriba, negativas hacia abajo (rojo),
+// valor 0 = marca fina sobre el eje, sin datos = <Empty />.
+export function BarChart({ name, data, unit = '' }) {
   if (!data.length) return <Empty />;
-  const max = Math.max(...data.map(d => d.value), 1);
+  const maxPos = Math.max(0, ...data.map(d => d.value));
+  const maxNeg = Math.max(0, ...data.map(d => -d.value));
+  const total = maxPos + maxNeg || 1;
+  const topH = (CHART_HEIGHT * maxPos) / total;
+  const bottomH = (CHART_HEIGHT * maxNeg) / total;
+
   return (
-    <ul className="flex flex-col gap-2">
-      {data.map(d => (
-        <li key={d.label} className="flex items-center gap-3 text-sm">
-          <span className="w-24 shrink-0 text-slate-500 tabular-nums">{d.label}</span>
-          <div className="flex-1 bg-slate-100 rounded-full h-3 overflow-hidden">
-            <div className="h-full bg-brand-500 rounded-full" style={{ width: `${(d.value / max) * 100}%` }} />
-          </div>
-          <span className="w-24 shrink-0 text-right font-medium tabular-nums">{d.value.toLocaleString('es-ES')}{unit}</span>
-        </li>
-      ))}
-    </ul>
+    <div className="overflow-x-auto">
+      <ul className="flex gap-2 min-w-full">
+        {data.map(d => {
+          const kind = d.value > 0 ? 'positive' : d.value < 0 ? 'negative' : 'zero';
+          return (
+            <li key={d.label} className="flex flex-col items-stretch min-w-[56px] flex-1" title={`${d.label}: ${fmt(d.value, unit)}`}>
+              <div className="flex flex-col justify-end" style={{ height: topH }}>
+                {kind === 'positive' && (
+                  <div data-testid={`bar-${name}-${d.label}`} data-kind={kind} className="bg-brand-500 rounded-t"
+                    style={{ height: (d.value / maxPos) * topH }} />
+                )}
+              </div>
+              <div data-testid={`zero-line-${name}`} className="h-px bg-slate-400" />
+              <div style={{ height: bottomH }}>
+                {kind === 'zero' && (
+                  <div data-testid={`bar-${name}-${d.label}`} data-kind={kind} className="bg-slate-500" style={{ height: 3 }} />
+                )}
+                {kind === 'negative' && (
+                  <div data-testid={`bar-${name}-${d.label}`} data-kind={kind} className="bg-red-500 rounded-b"
+                    style={{ height: (-d.value / maxNeg) * bottomH }} />
+                )}
+              </div>
+              <span className={`mt-1 text-center text-xs tabular-nums ${d.value < 0 ? 'text-red-600 font-semibold' : 'text-slate-700'}`}>{fmt(d.value, unit)}</span>
+              <span className="text-center text-xs text-slate-400">{d.label}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
