@@ -40,9 +40,9 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 **Objetivo:** Permitir inicio de sesión seguro y proteger endpoints según el rol (`comercial`, `jefe`, `admin_rrhh`).
 
 **Tareas:**
-- [ ] Implementar hash de contraseñas y firma/verificación de tokens JWT en `backend/src/auth.py`.
-- [ ] Crear dependencias FastAPI `get_current_user` y guardias de rol `require_roles(...)`.
-- [ ] Crear endpoint `/api/auth/login`.
+- [x] Implementar hash de contraseñas y firma/verificación de tokens JWT en `backend/src/auth.py`.
+- [x] Crear dependencias FastAPI `get_current_user` y guardias de rol `require_roles(...)`.
+- [x] Crear endpoint `/api/auth/login`.
 
 **Pruebas:**
 - `pytest backend/tests/test_auth.py` valida login exitoso, rechazo con credenciales erróneas y respuesta 401 en tokens inválidos o expirados.
