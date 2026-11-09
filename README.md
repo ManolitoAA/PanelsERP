@@ -34,3 +34,13 @@ Este repositorio es el punto de partida de tu proyecto. No trae código de aplic
 El push lo haces tú, después de revisar con `git status` que `.env` no aparece.
 
 Si usas GitHub, instala `gh` y haz `gh auth login` una vez. Así el agente podrá abrir pull requests, siempre pidiéndote permiso antes.
+
+## Base de datos Postgres (Docker, local)
+
+1. `cp .env.example .env` y rellena `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` y `DATABASE_URL` (puerto 5433 por defecto; cámbialo con `POSTGRES_PORT`).
+2. `docker compose up -d --wait`
+3. `cd backend && set -a && . ../.env && set +a && ../.venv/bin/python -m src.seed && ../.venv/bin/uvicorn src.main:app --reload --port 8000`
+4. `cd frontend && npm run dev`
+
+Sin `DATABASE_URL` el backend usa SQLite (`backend/panelserp.db`). `docker compose down -v` borra los datos.
+Prueba contra Postgres real: `TEST_POSTGRES_URL=$DATABASE_URL .venv/bin/pytest backend/tests/test_postgres.py`.
