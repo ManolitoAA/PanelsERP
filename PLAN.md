@@ -103,9 +103,9 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 **Objetivo:** Desarrollar la interfaz web completa y verificar de extremo a extremo el flujo de trabajo.
 
 **Tareas:**
-- [ ] Crear layout y vistas de login, dashboard comercial y panel de supervisión.
-- [ ] Crear islas interactivas en React (`ClientList.tsx`, `OrderForm.tsx`, `TemplateModal.tsx` con botón de copia al portapapeles y envío).
-- [ ] Configurar y ejecutar pruebas de extremo a extremo con Playwright.
+- [x] Crear layout y vistas de login, dashboard comercial y panel de supervisión.
+- [x] Crear islas interactivas en React (`ClientList.jsx`, `OrderForm.jsx`, `TemplateModal.jsx` con botón de copia al portapapeles y envío).
+- [x] Configurar y ejecutar pruebas de extremo a extremo con Playwright.
 
 **Pruebas:**
 - `npx playwright test e2e/panelserp.spec.ts` simula el inicio de sesión del comercial, creación de cliente, cálculo de pedido y verificación de interfaz.
