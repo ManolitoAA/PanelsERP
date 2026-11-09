@@ -1,11 +1,9 @@
 import { test, expect } from '@playwright/test';
 
-// Requires the Astro dev server running on port 4321 (npm run dev)
-// and the FastAPI backend on port 8000 (uvicorn src.main:app --reload)
-// Run with: npx playwright test e2e/panelserp.spec.ts
+// Run with: npm run test:e2e (desde frontend/; levanta backend :8001 y frontend :4322 aislados)
 
 test('login page renders with PanelsERP title and email/password fields', async ({ page }) => {
-  await page.goto('http://localhost:4321/');
+  await page.goto('/');
   await expect(page.locator('h1')).toContainText('PanelsERP');
   await expect(page.locator('input[name="email"]')).toBeVisible();
   await expect(page.locator('input[name="password"]')).toBeVisible();
@@ -13,7 +11,7 @@ test('login page renders with PanelsERP title and email/password fields', async 
 });
 
 test('login with wrong credentials shows error message', async ({ page }) => {
-  await page.goto('http://localhost:4321/');
+  await page.goto('/');
   await page.fill('input[name="email"]', 'nobody@test.com');
   await page.fill('input[name="password"]', 'wrongpassword');
   await page.click('button[type="submit"]');
@@ -21,7 +19,7 @@ test('login with wrong credentials shows error message', async ({ page }) => {
 });
 
 async function login(page, email: string) {
-  await page.goto('http://localhost:4321/');
+  await page.goto('/');
   await page.fill('input[name="email"]', email);
   await page.fill('input[name="password"]', 'password123');
   await page.click('button[type="submit"]');
@@ -44,6 +42,9 @@ test.describe.serial('flujo comercial y supervisión', () => {
     await page.fill('input[placeholder="Cant."]', '200');
     await page.fill('input[placeholder="Precio €"]', '15');
     await page.fill('input[placeholder="Coste €"]', '9');
+    const margin = page.locator('input[name="margin"]');
+    await expect(margin).toHaveValue('40.0 %');
+    await expect(margin).not.toBeEditable();
     await expect(page.getByText('Total: 3000.00 € · Beneficio: 1200.00 €', { exact: true })).toBeVisible();
     await page.click('button:has-text("Crear pedido")');
 
