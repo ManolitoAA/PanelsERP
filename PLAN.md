@@ -8,9 +8,9 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 **Objetivo:** Crear la estructura base del backend (FastAPI) y frontend (Astro) con un endpoint de comprobación operativo.
 
 **Tareas:**
-- [ ] Crear estructura base de backend con FastAPI y dependencias en `backend/pyproject.toml`.
-- [ ] Crear endpoint `GET /api/health` en `backend/src/main.py`.
-- [ ] Inicializar esqueleto del frontend en Astro dentro de `frontend/`.
+- [x] Crear estructura base de backend con FastAPI y dependencias en `backend/pyproject.toml`.
+- [x] Crear endpoint `GET /api/health` en `backend/src/main.py`.
+- [x] Inicializar esqueleto del frontend en Astro dentro de `frontend/`.
 
 **Pruebas:**
 - `pytest backend/tests/test_health.py` comprueba que la API responde `{"status": "ok", "app": "PanelsERP"}` con código 200.

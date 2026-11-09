@@ -19,3 +19,4 @@ dist/
 # Graphify & tools
 graphify-out/
 .DS_Store
+.superpowers/
