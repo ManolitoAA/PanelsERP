@@ -105,9 +105,10 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 **Tareas:**
 - [x] Crear layout y vistas de login, dashboard comercial y panel de supervisión.
 - [x] Crear islas interactivas en React (`ClientList.jsx`, `OrderForm.jsx`, `TemplateModal.jsx` con botón de copia al portapapeles y envío).
-- [x] Configurar y ejecutar pruebas de extremo a extremo con Playwright.
+- [x] Configurar y ejecutar pruebas de extremo a extremo con Playwright (`npm run test:e2e` en `frontend/`, 4/4 en verde).
+- [x] Seed de usuarios demo (`backend/src/seed.py`), formulario de cliente y panel de supervisión por rol.
 
 **Pruebas:**
-- `npx playwright test e2e/panelserp.spec.ts` simula el inicio de sesión del comercial, creación de cliente, cálculo de pedido y verificación de interfaz.
+- `npm run test:e2e` (desde `frontend/`) simula el inicio de sesión del comercial, creación de cliente, cálculo de pedido y verificación de interfaz.
 
 **Hecho cuando:** La aplicación se abre en navegador, todos los formularios funcionan y la prueba de Playwright pasa al 100%.

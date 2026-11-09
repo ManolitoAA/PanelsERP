@@ -1,11 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const API_BASE = import.meta.env.PUBLIC_API_URL || 'http://localhost:8000';
-
-function authHeaders() {
-  const token = localStorage.getItem('token');
-  return { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
-}
+import { API_BASE, authHeaders } from './api.js';
 
 export default function ClientList() {
   const [clients, setClients] = useState([]);
@@ -37,6 +32,7 @@ export default function ClientList() {
             <th className="px-4 py-2 border-b">Email</th>
             <th className="px-4 py-2 border-b text-right">Facturado €</th>
             <th className="px-4 py-2 border-b text-right">Beneficio €</th>
+            <th className="px-4 py-2 border-b"></th>
           </tr>
         </thead>
         <tbody>
@@ -47,6 +43,7 @@ export default function ClientList() {
               <td className="px-4 py-2 text-slate-500">{c.contact_email}</td>
               <td className="px-4 py-2 text-right tabular-nums">{c.total_billed.toFixed(2)}</td>
               <td className="px-4 py-2 text-right tabular-nums text-emerald-700">{c.total_profit.toFixed(2)}</td>
+              <td className="px-4 py-2"><a href={`/orders?client_id=${c.id}`} className="text-blue-600 hover:underline">Nuevo pedido</a></td>
             </tr>
           ))}
         </tbody>

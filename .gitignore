@@ -20,3 +20,12 @@ dist/
 graphify-out/
 .DS_Store
 .superpowers/
+
+# Skills
+.superpowers
+.graphify
+
+# E2E
+*.db
+test-results/
+playwright-report/
