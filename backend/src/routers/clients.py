@@ -2,7 +2,7 @@ from typing import List, Literal, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlmodel import Session, select
-from src.auth import get_current_user
+from src.auth import get_current_user, require_roles
 from src.db import get_session
 from src.models import Client, RoleEnum, User
 
@@ -39,7 +39,7 @@ def list_clients(
 @router.post("", response_model=Client, status_code=status.HTTP_201_CREATED)
 def create_client(
     payload: ClientCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles([RoleEnum.COMERCIAL, RoleEnum.JEFE])),
     session: Session = Depends(get_session)
 ):
     commercial_id = current_user.id
@@ -79,7 +79,7 @@ def get_client(
 def update_client(
     client_id: int,
     payload: ClientUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles([RoleEnum.COMERCIAL, RoleEnum.JEFE])),
     session: Session = Depends(get_session)
 ):
     client = session.get(Client, client_id)

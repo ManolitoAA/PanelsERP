@@ -11,6 +11,7 @@ export default function ClientList({ status = '' }) {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const readOnly = localStorage.getItem('role') === 'admin_rrhh';
 
   useEffect(() => {
     setLoading(true);
@@ -41,10 +42,10 @@ export default function ClientList({ status = '' }) {
           <td className="px-4 py-3 text-slate-600">{c.company}</td>
           <td className="px-4 py-3 text-slate-500">{c.contact_email}</td>
           <td className="px-4 py-3">
-            <select aria-label={`Estado de ${c.name}`} value={c.status} onChange={e => changeStatus(c.id, e.target.value)} className={inputClass}>
+            {readOnly ? <span className="capitalize">{c.status}</span> : <select aria-label={`Estado de ${c.name}`} value={c.status} onChange={e => changeStatus(c.id, e.target.value)} className={inputClass}>
               <option value="lead">Lead</option>
               <option value="cliente">Cliente</option>
-            </select>
+            </select>}
           </td>
           <td className="px-4 py-3 text-right tabular-nums">{c.total_billed.toFixed(2)}</td>
           <td className="px-4 py-3 text-right tabular-nums text-emerald-700">{c.total_profit.toFixed(2)}</td>

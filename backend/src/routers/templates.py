@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
-from jinja2 import BaseLoader, Environment, TemplateSyntaxError
+from jinja2 import BaseLoader, TemplateError
+from jinja2.sandbox import SandboxedEnvironment
 from pydantic import BaseModel, EmailStr
 from sqlmodel import Session, select
 from src.auth import get_current_user
@@ -8,10 +9,22 @@ from src.db import get_session
 from src.models import Template, User
 from src.services import mailer
 
+def _render_template(tpl: Template, context: Dict[str, Any]) -> tuple[str, str]:
+    """Renderiza asunto y cuerpo; cualquier fallo de la plantilla del usuario es un 422, nunca un 500."""
+    try:
+        return (
+            _jinja_env.from_string(tpl.subject).render(context),
+            _jinja_env.from_string(tpl.body_content).render(context),
+        )
+    except TemplateError as exc:
+        raise HTTPException(status_code=422, detail=f"Template syntax error: {exc}")
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=f"Template render error: {type(exc).__name__}: {exc}")
+
 router = APIRouter(prefix="/api/templates", tags=["templates"])
 
 # Sandboxed Jinja2 env: no filesystem access, autoescaping off (plain-text messages)
-_jinja_env = Environment(loader=BaseLoader(), autoescape=False)
+_jinja_env = SandboxedEnvironment(loader=BaseLoader(), autoescape=False)
 
 class TemplateCreate(BaseModel):
     name: str
@@ -59,11 +72,7 @@ def render_template(
     if not tpl:
         raise HTTPException(status_code=404, detail="Template not found")
 
-    try:
-        rendered_subject = _jinja_env.from_string(tpl.subject).render(payload.context)
-        rendered_body = _jinja_env.from_string(tpl.body_content).render(payload.context)
-    except TemplateSyntaxError as exc:
-        raise HTTPException(status_code=422, detail=f"Template syntax error: {exc}")
+    rendered_subject, rendered_body = _render_template(tpl, payload.context)
 
     return RenderResponse(rendered_subject=rendered_subject, rendered_body=rendered_body)
 
@@ -79,11 +88,7 @@ def send_template_email(
     if not tpl:
         raise HTTPException(status_code=404, detail="Template not found")
 
-    try:
-        rendered_subject = _jinja_env.from_string(tpl.subject).render(payload.context)
-        rendered_body = _jinja_env.from_string(tpl.body_content).render(payload.context)
-    except TemplateSyntaxError as exc:
-        raise HTTPException(status_code=422, detail=f"Template syntax error: {exc}")
+    rendered_subject, rendered_body = _render_template(tpl, payload.context)
 
     background_tasks.add_task(mailer.send_smtp_email, payload.to_email, rendered_subject, rendered_body)
     return {"status": "enqueued", "to": payload.to_email}

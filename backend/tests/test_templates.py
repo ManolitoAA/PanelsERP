@@ -83,3 +83,17 @@ def test_send_email_mock(mock_send, tpl_client):
     }, headers=headers)
     assert res.status_code == 202
     assert res.json()["status"] == "enqueued"
+
+def _render(tc, headers, body):
+    t = tc.post("/api/templates", json={"name": "T", "subject": "S", "body_content": body}, headers=headers).json()
+    return tc.post(f"/api/templates/{t['id']}/render", json={"context": {}}, headers=headers)
+
+def test_template_sandbox_blocks_attribute_escape(tpl_client):
+    tc, headers = tpl_client
+    res = _render(tc, headers, "{{ ''.__class__.__mro__[1].__subclasses__() }}")
+    assert res.status_code == 422
+    assert "unsafe" in res.text
+
+def test_template_runtime_error_is_422_not_500(tpl_client):
+    tc, headers = tpl_client
+    assert _render(tc, headers, "{{ 1/0 }}").status_code == 422

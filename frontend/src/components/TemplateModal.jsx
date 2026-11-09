@@ -19,7 +19,7 @@ export default function TemplateModal({ template, onClose }) {
         headers: authHeaders(),
         body: JSON.stringify({ context: ctx }),
       });
-      if (!res.ok) throw new Error((await res.json()).detail || 'Error al renderizar');
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || 'Error al renderizar');
       setPreview(await res.json());
     } catch (e) {
       setError(e.message || 'JSON de contexto inválido');

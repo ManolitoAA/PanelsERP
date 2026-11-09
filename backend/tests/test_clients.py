@@ -105,3 +105,15 @@ def test_invalid_status_rejected(client_env):
     bad = tc.post("/api/clients", json={"name": "X", "company": "Y", "contact_email": "x@y.z", "status": "foo"}, headers=h)
     assert bad.status_code == 422
     assert tc.get("/api/clients?status=foo", headers=h).status_code == 422
+
+def test_admin_rrhh_is_read_only_on_clients(client_env):
+    tc, h, admin = client_env["client"], client_env["c1_headers"], client_env["admin_headers"]
+    cid = _new(tc, h).json()["id"]
+    assert tc.get("/api/clients", headers=admin).status_code == 200
+    assert tc.post("/api/clients", json={"name": "X", "company": "Y", "contact_email": "x@y.z"}, headers=admin).status_code == 403
+    assert tc.put(f"/api/clients/{cid}", json={"status": "cliente"}, headers=admin).status_code == 403
+
+def test_update_with_invalid_status_rejected(client_env):
+    tc, h = client_env["client"], client_env["c1_headers"]
+    cid = _new(tc, h).json()["id"]
+    assert tc.put(f"/api/clients/{cid}", json={"status": "foo"}, headers=h).status_code == 422
