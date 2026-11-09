@@ -1,0 +1,7 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import OrderPage from '../../components/OrderPage.jsx';
+---
+<Layout title="Nuevo pedido">
+  <OrderPage client:only="react" />
+</Layout>

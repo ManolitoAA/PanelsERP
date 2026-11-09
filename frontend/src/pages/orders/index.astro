@@ -1,0 +1,7 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import OrdersList from '../../components/OrdersList.jsx';
+---
+<Layout title="Pedidos">
+  <OrdersList client:only="react" />
+</Layout>

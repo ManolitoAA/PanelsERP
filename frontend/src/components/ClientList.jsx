@@ -1,53 +1,56 @@
 import React, { useEffect, useState } from 'react';
-
 import { API_BASE, authHeaders } from './api.js';
+import { Table, Empty, inputClass } from './ui.jsx';
 
-export default function ClientList() {
+const COLUMNS = [
+  { label: 'Nombre' }, { label: 'Empresa' }, { label: 'Email' }, { label: 'Estado' },
+  { label: 'Facturado €', right: true }, { label: 'Beneficio €', right: true }, { label: '' },
+];
+
+export default function ClientList({ status = '' }) {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/clients`, { headers: authHeaders() })
-      .then(r => {
-        if (!r.ok) throw new Error('No autorizado');
-        return r.json();
-      })
+    setLoading(true);
+    fetch(`${API_BASE}/api/clients${status ? `?status=${status}` : ''}`, { headers: authHeaders() })
+      .then(r => { if (!r.ok) throw new Error('No autorizado'); return r.json(); })
       .then(setClients)
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [status]);
 
-  if (loading) return <p className="text-slate-500 text-sm">Cargando clientes…</p>;
-  if (error) return <p className="text-red-600 text-sm">{error}</p>;
-  if (!clients.length) return <p className="text-slate-400 text-sm">Sin clientes todavía.</p>;
+  async function changeStatus(id, newStatus) {
+    const res = await fetch(`${API_BASE}/api/clients/${id}`, {
+      method: 'PUT', headers: authHeaders(), body: JSON.stringify({ status: newStatus }),
+    });
+    if (!res.ok) return setError('No se pudo cambiar el estado');
+    setClients(cs => (status && status !== newStatus ? cs.filter(c => c.id !== id) : cs.map(c => (c.id === id ? { ...c, status: newStatus } : c))));
+  }
+
+  if (loading) return <Empty>Cargando clientes…</Empty>;
+  if (error) return <p role="alert" className="text-red-600 text-sm">{error}</p>;
+  if (!clients.length) return <Empty>Sin clientes todavía.</Empty>;
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm text-left border-collapse">
-        <thead>
-          <tr className="bg-slate-100 text-slate-600 uppercase text-xs">
-            <th className="px-4 py-2 border-b">Nombre</th>
-            <th className="px-4 py-2 border-b">Empresa</th>
-            <th className="px-4 py-2 border-b">Email</th>
-            <th className="px-4 py-2 border-b text-right">Facturado €</th>
-            <th className="px-4 py-2 border-b text-right">Beneficio €</th>
-            <th className="px-4 py-2 border-b"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {clients.map(c => (
-            <tr key={c.id} className="hover:bg-slate-50 border-b border-slate-100">
-              <td className="px-4 py-2 font-medium">{c.name}</td>
-              <td className="px-4 py-2 text-slate-600">{c.company}</td>
-              <td className="px-4 py-2 text-slate-500">{c.contact_email}</td>
-              <td className="px-4 py-2 text-right tabular-nums">{c.total_billed.toFixed(2)}</td>
-              <td className="px-4 py-2 text-right tabular-nums text-emerald-700">{c.total_profit.toFixed(2)}</td>
-              <td className="px-4 py-2"><a href={`/orders?client_id=${c.id}`} className="text-blue-600 hover:underline">Nuevo pedido</a></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Table columns={COLUMNS}>
+      {clients.map(c => (
+        <tr key={c.id} className="hover:bg-slate-50">
+          <td className="px-4 py-3 font-medium">{c.name}</td>
+          <td className="px-4 py-3 text-slate-600">{c.company}</td>
+          <td className="px-4 py-3 text-slate-500">{c.contact_email}</td>
+          <td className="px-4 py-3">
+            <select aria-label={`Estado de ${c.name}`} value={c.status} onChange={e => changeStatus(c.id, e.target.value)} className={inputClass}>
+              <option value="lead">Lead</option>
+              <option value="cliente">Cliente</option>
+            </select>
+          </td>
+          <td className="px-4 py-3 text-right tabular-nums">{c.total_billed.toFixed(2)}</td>
+          <td className="px-4 py-3 text-right tabular-nums text-emerald-700">{c.total_profit.toFixed(2)}</td>
+          <td className="px-4 py-3"><a href={`/orders/new?client_id=${c.id}`} className="text-brand-600 hover:underline font-medium">Nuevo pedido</a></td>
+        </tr>
+      ))}
+    </Table>
   );
 }

@@ -29,7 +29,8 @@ async function login(page, email: string) {
 test.describe.serial('flujo comercial y supervisión', () => {
   test('comercial crea cliente y pedido (Caso 1: 3.000 € / 1.200 €)', async ({ page }) => {
     await login(page, 'comercial1@panelserp.com');
-    await expect(page.getByRole('heading', { name: /Mis Clientes/ })).toBeVisible();
+    await page.getByRole('navigation').getByRole('link', { name: 'Clientes' }).click();
+    await expect(page.getByRole('heading', { name: 'Clientes y leads' })).toBeVisible();
 
     await page.fill('input[name="client-name"]', 'Hans');
     await page.fill('input[name="client-company"]', 'Bauhaus');
@@ -48,10 +49,69 @@ test.describe.serial('flujo comercial y supervisión', () => {
     await expect(page.getByText('Total: 3000.00 € · Beneficio: 1200.00 €', { exact: true })).toBeVisible();
     await page.click('button:has-text("Crear pedido")');
 
-    await expect(page).toHaveURL(/.*dashboard/);
+    await expect(page).toHaveURL(/.*\/orders$/);
+    await expect(page.locator('tr', { hasText: 'Bauhaus' })).toContainText('3000.00');
+    await page.getByRole('navigation').getByRole('link', { name: 'Clientes' }).click();
     const row = page.locator('tr', { hasText: 'Bauhaus' });
     await expect(row).toContainText('3000.00');
     await expect(row).toContainText('1200.00');
+  });
+
+  test('pedidos: el pedido creado aparece en el listado', async ({ page }) => {
+    await login(page, 'comercial1@panelserp.com');
+    await page.getByRole('navigation').getByRole('link', { name: 'Pedidos' }).click();
+    const row = page.locator('tr', { hasText: 'Bauhaus' });
+    await expect(row).toContainText('3000.00');
+    await expect(row).toContainText('1200.00');
+  });
+
+  test('clientes: filtrar por lead y cliente', async ({ page }) => {
+    await login(page, 'comercial1@panelserp.com');
+    await page.goto('/clients');
+    await page.fill('input[name="client-name"]', 'Zeta');
+    await page.fill('input[name="client-company"]', 'Zeta GmbH');
+    await page.fill('input[name="client-email"]', 'z@zeta.de');
+    await page.click('button:has-text("Crear cliente")');
+    const zeta = page.locator('tr', { hasText: 'Zeta GmbH' });
+    await expect(zeta).toBeVisible();
+    await zeta.getByRole('combobox').selectOption('cliente');
+    await page.getByRole('button', { name: 'Clientes', exact: true }).click();
+    await expect(page.locator('tr', { hasText: 'Zeta GmbH' })).toBeVisible();
+    await expect(page.locator('tr', { hasText: 'Bauhaus' })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Leads', exact: true }).click();
+    await expect(page.locator('tr', { hasText: 'Bauhaus' })).toBeVisible();
+    await expect(page.locator('tr', { hasText: 'Zeta GmbH' })).toHaveCount(0);
+  });
+
+  test('proveedores y plantillas: crear y usar plantilla con vista previa', async ({ page }) => {
+    await login(page, 'comercial1@panelserp.com');
+    await page.goto('/suppliers');
+    await page.fill('input[name="supplier-name"]', 'Polímeros SA');
+    await page.fill('input[name="supplier-contact"]', 'ventas@polimeros.es');
+    await page.click('button:has-text("Añadir proveedor")');
+    await expect(page.locator('tr', { hasText: 'Polímeros SA' })).toBeVisible();
+
+    await page.goto('/templates');
+    await page.fill('input[name="tpl-name"]', 'Saludo');
+    await page.fill('input[name="tpl-subject"]', 'Presupuesto para {{ nombre }}');
+    await page.fill('textarea[name="tpl-body"]', 'Hola {{ nombre }}, gracias.');
+    await page.click('button:has-text("Crear plantilla")');
+    await page.locator('tr', { hasText: 'Saludo' }).getByRole('button', { name: 'Usar' }).click();
+    await page.locator('textarea').last().fill('{"nombre":"Hans"}');
+    await page.click('button:has-text("Previsualizar")');
+    await expect(page.getByText('Hola Hans, gracias.')).toBeVisible();
+  });
+
+  test('plantillas: una sintaxis inválida muestra error', async ({ page }) => {
+    await login(page, 'comercial1@panelserp.com');
+    await page.goto('/templates');
+    await page.fill('input[name="tpl-name"]', 'Rota');
+    await page.fill('input[name="tpl-subject"]', 'Asunto');
+    await page.fill('textarea[name="tpl-body"]', 'Hola {{ nombre');
+    await page.click('button:has-text("Crear plantilla")');
+    await page.locator('tr', { hasText: 'Rota' }).getByRole('button', { name: 'Usar' }).click();
+    await page.click('button:has-text("Previsualizar")');
+    await expect(page.getByRole('alert')).toContainText(/sintaxis|syntax/i);
   });
 
   test('jefe ve el panel de supervisión con facturación del comercial (Caso 2)', async ({ page }) => {

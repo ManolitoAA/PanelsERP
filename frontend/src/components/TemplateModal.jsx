@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
 
-const API_BASE = import.meta.env.PUBLIC_API_URL || 'http://localhost:8000';
-
-function authHeaders() {
-  return {
-    Authorization: `Bearer ${localStorage.getItem('token')}`,
-    'Content-Type': 'application/json',
-  };
-}
+import { API_BASE, authHeaders } from './api.js';
 
 export default function TemplateModal({ template, onClose }) {
   const [context, setContext] = useState('{}');
@@ -26,7 +19,7 @@ export default function TemplateModal({ template, onClose }) {
         headers: authHeaders(),
         body: JSON.stringify({ context: ctx }),
       });
-      if (!res.ok) throw new Error('Error al renderizar');
+      if (!res.ok) throw new Error((await res.json()).detail || 'Error al renderizar');
       setPreview(await res.json());
     } catch (e) {
       setError(e.message || 'JSON de contexto inválido');
@@ -67,7 +60,7 @@ export default function TemplateModal({ template, onClose }) {
           <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-xl">&times;</button>
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
 
         <label className="text-sm font-medium text-slate-700 flex flex-col gap-1">
           Variables (JSON)
@@ -75,7 +68,7 @@ export default function TemplateModal({ template, onClose }) {
             rows={4}
             value={context}
             onChange={e => setContext(e.target.value)}
-            className="border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </label>
 
@@ -101,7 +94,7 @@ export default function TemplateModal({ template, onClose }) {
               onChange={e => setToEmail(e.target.value)}
               className="flex-1 border rounded-lg px-2 py-2 text-sm" />
             <button onClick={handleSend} disabled={sending || !toEmail}
-              className="bg-blue-600 text-white px-4 rounded-lg text-sm font-medium disabled:opacity-60">
+              className="bg-brand-600 text-white px-4 rounded-lg text-sm font-medium disabled:opacity-60">
               {sending ? '…' : 'Enviar'}
             </button>
           </div>
