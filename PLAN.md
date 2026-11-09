@@ -71,9 +71,9 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 **Objetivo:** Creación y consulta de pedidos recurrentes o libres con cálculo dinámico de costes/márgenes y actualización de acumulados de cliente.
 
 **Tareas:**
-- [ ] Implementar servicio de cálculo flexible `backend/src/services/profit_calculator.py`.
-- [ ] Crear router `backend/src/routers/orders.py` con actualización automática de `total_billed` y `total_profit` en el cliente.
-- [ ] Crear endpoint `/api/reports/billing` para supervisión de facturación por comercial.
+- [x] Implementar servicio de cálculo flexible `backend/src/services/profit_calculator.py`.
+- [x] Crear router `backend/src/routers/orders.py` con actualización automática de `total_billed` y `total_profit` en el cliente.
+- [x] Crear endpoint `/api/reports/billing` para supervisión de facturación por comercial.
 
 **Pruebas:**
 - `pytest backend/tests/test_orders.py` valida cálculo de márgenes, actualización de saldos del cliente y permisos de reportes.
