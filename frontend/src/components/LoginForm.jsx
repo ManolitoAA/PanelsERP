@@ -71,7 +71,7 @@ export default function LoginForm() {
         disabled={loading}
         className="bg-brand-600 hover:bg-brand-700 disabled:opacity-60 text-white font-semibold rounded-lg py-2 transition-colors"
       >
-        {loading ? 'Entrando...' : 'Entrar'}
+        {loading ? 'Iniciando sesión…' : 'Iniciar sesión'}
       </button>
     </form>
   );

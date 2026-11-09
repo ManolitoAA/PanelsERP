@@ -57,6 +57,14 @@ cd frontend && npm run dev
 
 Abre http://localhost:4321.
 
+### Datos de demo (para enseñar el MVP)
+
+```bash
+cd backend && ../.venv/bin/python -m src.seed --demo
+```
+
+Añade 7 clientes y leads de dos comerciales, 24 pedidos repartidos en 6 meses (con un mes en pérdidas), 3 proveedores y 3 plantillas. Si la BD ya tiene clientes no hace nada, así que no duplica ni pisa tus datos. Las fechas son relativas al día en que lo ejecutas.
+
 ### Usuarios de demo
 
 `comercial1@panelserp.com`, `comercial2@panelserp.com`, `jefe@panelserp.com` y `admin@panelserp.com`, todos con la contraseña `password123`. Son solo para desarrollo: no los uses en producción.
@@ -94,7 +102,7 @@ Levantan su propio backend (puerto 8001, SQLite temporal) y su frontend (puerto 
 - `backend/tests/`: pruebas del backend, junto al código.
 - `frontend/src/`: páginas Astro (`pages/`) y componentes React (`components/`).
 - `e2e/`: pruebas de extremo a extremo.
-- `docs/`: información del proyecto y planes de implementación.
+- `docs/`: información del proyecto, planes de implementación y `presentacion/` (resumen del MVP por rol en LaTeX/beamer; compila con `tectonic panelserp-mvp.tex`).
 - `PLAN.md`: fases del proyecto.
 - `docker-compose.yml`: PostgreSQL local.
 

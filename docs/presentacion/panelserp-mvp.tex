@@ -1,0 +1,264 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usepackage[spanish]{babel}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+
+\definecolor{brand}{HTML}{2B56D4}
+\definecolor{brandDark}{HTML}{14275F}
+\definecolor{ok}{HTML}{15803D}
+\definecolor{no}{HTML}{B91C1C}
+\definecolor{soft}{HTML}{EEF4FF}
+
+\usetheme{default}
+\usecolortheme[named=brand]{structure}
+\setbeamercolor{title}{fg=brandDark}
+\setbeamercolor{frametitle}{fg=white,bg=brandDark}
+\setbeamercolor{block title}{fg=white,bg=brand}
+\setbeamercolor{block body}{bg=soft}
+\setbeamercolor{block title alerted}{fg=white,bg=no}
+\setbeamercolor{block body alerted}{bg=red!6}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{\hfill\scriptsize\color{gray}PanelsERP -- MVP \quad\insertframenumber\,/\,\inserttotalframenumber\hspace{1em}\vspace{0.5em}}
+\setbeamertemplate{itemize items}[circle]
+
+\newcommand{\si}[1][]{\textcolor{ok}{\textbf{S\'i}}#1}
+\newcommand{\no}{\textcolor{no}{\textbf{No}}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\eur}{\texteuro}
+
+\title{PanelsERP}
+\subtitle{ERP y CRM para una pyme de exportaci\'on de protecciones de polietileno\\[2pt]Resumen del MVP: qu\'e puede hacer cada rol}
+\date{}
+
+\begin{document}
+
+\begin{frame}[plain]
+  \vfill
+  \begin{center}
+    {\Huge\bfseries\color{brandDark} PanelsERP}\\[6pt]
+    {\Large\color{brand} Gesti\'on comercial y exportaci\'on}\\[18pt]
+    {\large Resumen del MVP: qu\'e puede hacer cada rol}\\[4pt]
+    {\small\color{gray} Leads y clientes \,$\cdot$\, Pedidos con margen \,$\cdot$\, Dashboard de beneficios \,$\cdot$\, Proveedores \,$\cdot$\, Plantillas}
+  \end{center}
+  \vfill
+\end{frame}
+
+\begin{frame}{Un vistazo: las cinco secciones}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{block}{Barra lateral (misma para todos)}
+      \begin{itemize}
+        \item \textbf{Dashboard}: facturaci\'on y beneficio por mes, ventas por d\'ia
+        \item \textbf{Clientes}: leads y clientes, con estado
+        \item \textbf{Pedidos}: listado y alta con margen autom\'atico
+        \item \textbf{Proveedores}: directorio de contactos
+        \item \textbf{Plantillas}: mensajes con variables
+      \end{itemize}
+    \end{block}
+    \column{0.5\textwidth}
+    \begin{block}{Tres roles, mismos men\'us}
+      \begin{itemize}
+        \item \textbf{Comercial}: solo lo suyo
+        \item \textbf{Jefe / Direcci\'on}: todo, sin restricciones
+        \item \textbf{Administraci\'on / RRHH}: lectura de todo el negocio
+      \end{itemize}
+      \vspace{4pt}
+      \small Lo que cambia por rol son los \emph{datos} que se ven y las acciones permitidas, no el men\'u.
+    \end{block}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Matriz de permisos}
+  \centering\small
+  \renewcommand{\arraystretch}{1.3}\setlength{\tabcolsep}{4pt}
+  \begin{tabular}{@{}L{4.1cm}L{2.5cm}L{3.2cm}L{3.2cm}@{}}
+    \toprule
+    & \textbf{Comercial} & \textbf{Jefe} & \textbf{Admin / RRHH}\\
+    \midrule
+    Dashboard de beneficios        & solo el suyo & de todos, con filtro & de todos, con filtro\\
+    Ver clientes y leads           & los suyos & todos & todos\\
+    Crear y editar clientes        & los suyos & todos (y reasignar) & \no\\
+    Pasar un lead a cliente        & \si[ (los suyos)] & \si & \no\\
+    Crear pedidos                  & en sus clientes & en cualquiera & \no\\
+    Ver pedidos                    & los suyos & todos & todos\\
+    Facturaci\'on por comercial     & \no & \si & \si\\
+    Proveedores y plantillas       & \si & \si & \si\\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}{Comercial: su d\'ia a d\'ia}
+  \begin{columns}[T]
+    \column{0.52\textwidth}
+    \begin{block}{Qu\'e puede hacer}
+      \begin{itemize}
+        \item Dar de alta \textbf{leads y clientes} y pasarlos de lead a cliente
+        \item Crear \textbf{pedidos} indicando precio y coste; el margen se calcula solo
+        \item Ver \textbf{su dashboard}: facturado, beneficio neto, n.\textsuperscript{o} de pedidos, meses y ventas por d\'ia
+        \item Usar \textbf{plantillas} para presupuestos y seguimientos: vista previa, copiar o enviar por email
+        \item Consultar el directorio de \textbf{proveedores}
+      \end{itemize}
+    \end{block}
+    \column{0.45\textwidth}
+    \begin{alertblock}{Qu\'e no puede}
+      \begin{itemize}
+        \item Ver ni tocar clientes o pedidos de otro comercial
+        \item Cambiar a qui\'en pertenece un cliente
+        \item Ver el informe de facturaci\'on por comercial
+      \end{itemize}
+    \end{alertblock}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Jefe / Direcci\'on: visi\'on global}
+  \begin{columns}[T]
+    \column{0.52\textwidth}
+    \begin{block}{Qu\'e puede hacer}
+      \begin{itemize}
+        \item \textbf{Dashboard} de toda la empresa o filtrado por comercial
+        \item \textbf{Panel de supervisi\'on}: pedidos, facturado y beneficio de cada comercial
+        \item Ver, crear y editar \textbf{todos los clientes}; \textbf{reasignarlos} a otro comercial
+        \item Crear pedidos en cualquier cliente
+        \item Gestionar proveedores y plantillas
+      \end{itemize}
+    \end{block}
+    \column{0.45\textwidth}
+    \begin{block}{Para qu\'e sirve}
+      \begin{itemize}
+        \item Detectar qu\'e meses se pierde dinero (barras rojas bajo el eje)
+        \item Comparar rendimiento entre comerciales
+        \item Revisar el estado de los leads de todo el equipo
+      \end{itemize}
+    \end{block}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Administraci\'on / Contabilidad / RRHH: solo lectura}
+  \begin{columns}[T]
+    \column{0.52\textwidth}
+    \begin{block}{Qu\'e puede hacer}
+      \begin{itemize}
+        \item Ver el \textbf{dashboard} de todos, con filtro por comercial
+        \item Consultar el \textbf{informe de facturaci\'on} por comercial: pedidos, facturado y beneficio
+        \item Consultar clientes y pedidos de todos para generar reportes y liquidaciones
+        \item Usar proveedores y plantillas
+      \end{itemize}
+    \end{block}
+    \column{0.45\textwidth}
+    \begin{alertblock}{Qu\'e no puede}
+      \begin{itemize}
+        \item Crear ni editar clientes o leads
+        \item Crear pedidos
+        \item Cambiar el estado de un cliente
+      \end{itemize}
+    \end{alertblock}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Pedidos: el margen se calcula solo}
+  \begin{columns}[T]
+    \column{0.55\textwidth}
+    \begin{block}{Ejemplo}
+      Perfil de polietileno de 2\,m
+      \begin{itemize}
+        \item 200 unidades a 15\,\eur\ (precio de venta)
+        \item Coste unitario de 9\,\eur
+      \end{itemize}
+      \vspace{4pt}
+      \textbf{Facturado:} 3.000\,\eur \quad \textbf{Beneficio neto:} 1.200\,\eur \quad \textbf{Margen:} 40\,\%
+    \end{block}
+    \column{0.42\textwidth}
+    \begin{itemize}
+      \item Se escribe \textbf{precio} y \textbf{coste}
+      \item El \textbf{margen} aparece en un campo de solo lectura: $(\text{precio}-\text{coste})/\text{precio}$
+      \item Al guardar se actualizan los acumulados del cliente
+      \item Se puede vender por debajo de coste: el beneficio sale negativo
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Dashboard de beneficios}
+  \begin{itemize}
+    \item \textbf{Tarjetas}: facturado, beneficio neto y n\'umero de pedidos
+    \item \textbf{Facturaci\'on y beneficio neto por mes}, en columnas sobre un eje en el 0
+    \begin{itemize}
+      \item Beneficio negativo: columna \textcolor{no}{\textbf{roja hacia abajo}}, a escala
+      \item Valor 0: marca sobre el eje \,$\cdot$\, Sin datos: gr\'afico vac\'io con ``Sin datos''
+    \end{itemize}
+    \item \textbf{Ventas por d\'ia}: cu\'antos pedidos se cierran cada jornada
+    \item Cada comercial ve el suyo; jefe y RRHH ven todo y \textbf{filtran por comercial}
+  \end{itemize}
+  \vspace{6pt}
+  \begin{block}{Importante}
+    Los meses y d\'ias se calculan en \textbf{hora UTC}, no en hora de Espa\~na. Lo indica el propio dashboard.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Leads, proveedores y plantillas}
+  \begin{columns}[T]
+    \column{0.33\textwidth}
+    \textbf{\color{brand}Leads y clientes}
+    \begin{itemize}\small
+      \item Cada registro es \emph{lead} o \emph{cliente}
+      \item Filtro Todos / Leads / Clientes
+      \item Acumulado de facturado y beneficio por cliente
+      \item Enlace directo a ``Nuevo pedido''
+    \end{itemize}
+    \column{0.33\textwidth}
+    \textbf{\color{brand}Proveedores}
+    \begin{itemize}\small
+      \item Directorio con contacto y notas
+      \item Alta r\'apida desde la propia pantalla
+    \end{itemize}
+    \column{0.33\textwidth}
+    \textbf{\color{brand}Plantillas}
+    \begin{itemize}\small
+      \item Variables: nombre, empresa, importe\ldots
+      \item Vista previa del mensaje
+      \item \textbf{Copiar} al portapapeles (WhatsApp, Outlook\ldots)
+      \item \textbf{Enviar} por email
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Gui\'on de demo (5 minutos)}
+  \small
+  \begin{enumerate}
+    \item \textbf{Comercial} (\texttt{comercial1@panelserp.com}): dashboard con 6 meses de datos y agosto en p\'erdidas
+    \item Crear un \textbf{cliente} y un \textbf{pedido}: ver el margen calcularse solo
+    \item Abrir una \textbf{plantilla}, previsualizar y copiar
+    \item \textbf{Jefe} (\texttt{jefe@panelserp.com}): dashboard global, filtrar por comercial, panel de supervisi\'on
+    \item \textbf{RRHH} (\texttt{admin@panelserp.com}): comprobar que es de solo lectura
+  \end{enumerate}
+  \vspace{4pt}
+  \begin{block}{Cuentas de demo (contrase\~na \texttt{password123})}
+    \texttt{comercial1@}, \texttt{comercial2@}, \texttt{jefe@}, \texttt{admin@}\texttt{panelserp.com}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Estado del MVP y siguientes pasos}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{block}{Listo}
+      \begin{itemize}\small
+        \item Roles con aislamiento de datos
+        \item Clientes, leads, pedidos, proveedores, plantillas
+        \item Dashboard con meses y ventas por d\'ia
+        \item PostgreSQL en Docker; pruebas autom\'aticas del backend y de extremo a extremo
+      \end{itemize}
+    \end{block}
+    \column{0.5\textwidth}
+    \begin{alertblock}{Pendiente / a tener en cuenta}
+      \begin{itemize}\small
+        \item Editar o anular pedidos y borrar clientes
+        \item Env\'io real de email: falta configurar SMTP y probarlo
+        \item Fechas en UTC; sin migraciones de BD
+        \item Usuarios de demo: cambiar antes de producci\'on
+      \end{itemize}
+    \end{alertblock}
+  \end{columns}
+\end{frame}
+
+\end{document}

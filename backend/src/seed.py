@@ -1,4 +1,5 @@
-"""Usuarios de demo/E2E. Uso: python -m src.seed (desde backend/)."""
+"""Usuarios de demo/E2E. Uso: python -m src.seed [--demo] (desde backend/)."""
+import sys
 from sqlmodel import Session, select
 from src.auth import hash_password
 from src.db import create_db_and_tables, engine
@@ -22,3 +23,6 @@ if __name__ == "__main__":
     create_db_and_tables()
     with Session(engine) as s:
         seed(s)
+        if "--demo" in sys.argv:
+            from src.demo_data import seed_demo
+            seed_demo(s)

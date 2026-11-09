@@ -32,7 +32,7 @@ class CommercialReport(BaseModel):
 @router.post("/api/orders", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 def create_order(
     payload: OrderCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles([RoleEnum.COMERCIAL, RoleEnum.JEFE])),
     session: Session = Depends(get_session)
 ):
     client = session.get(Client, payload.client_id)

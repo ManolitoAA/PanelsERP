@@ -97,3 +97,9 @@ def test_billing_report_by_commercial(order_env):
     assert res.status_code == 200
     report = res.json()
     assert isinstance(report, list)
+
+def test_admin_rrhh_cannot_create_orders(order_env):
+    tc, admin = order_env["client"], order_env["admin_headers"]
+    payload = {"client_id": order_env["client_id"], "items": [{"product_name": "X", "quantity": 1, "unit_price": 1.0, "unit_cost": 0.5}]}
+    assert tc.post("/api/orders", json=payload, headers=admin).status_code == 403
+    assert tc.get("/api/orders", headers=admin).status_code == 200

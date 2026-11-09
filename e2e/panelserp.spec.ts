@@ -7,7 +7,10 @@ test('login page renders with PanelsERP title and email/password fields', async 
   await expect(page.locator('h1')).toContainText('PanelsERP');
   await expect(page.locator('input[name="email"]')).toBeVisible();
   await expect(page.locator('input[name="password"]')).toBeVisible();
-  await expect(page.locator('button[type="submit"]')).toBeVisible();
+  const submit = page.getByRole('button', { name: 'Iniciar sesión' });
+  await expect(submit).toBeVisible();
+  // el botón debe tener fondo de marca (si Tailwind no generó las clases quedaría blanco sobre blanco)
+  await expect(submit).toHaveCSS('background-color', 'rgb(43, 86, 212)');
 });
 
 test('login with wrong credentials shows error message', async ({ page }) => {
