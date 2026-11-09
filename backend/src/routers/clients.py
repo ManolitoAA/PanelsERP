@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Literal, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlmodel import Session, select
@@ -13,15 +13,18 @@ class ClientCreate(BaseModel):
     company: str
     contact_email: str
     commercial_id: Optional[int] = None
+    status: Literal["lead", "cliente"] = "lead"
 
 class ClientUpdate(BaseModel):
     name: Optional[str] = None
     company: Optional[str] = None
     contact_email: Optional[str] = None
     commercial_id: Optional[int] = None
+    status: Optional[Literal["lead", "cliente"]] = None
 
 @router.get("", response_model=List[Client])
 def list_clients(
+    status: Optional[Literal["lead", "cliente"]] = None,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
@@ -29,6 +32,8 @@ def list_clients(
         statement = select(Client).where(Client.commercial_id == current_user.id)
     else:
         statement = select(Client)
+    if status:
+        statement = statement.where(Client.status == status)
     return session.exec(statement).all()
 
 @router.post("", response_model=Client, status_code=status.HTTP_201_CREATED)
@@ -46,6 +51,7 @@ def create_client(
         company=payload.company,
         contact_email=payload.contact_email,
         commercial_id=commercial_id,
+        status=payload.status,
         total_billed=0.0,
         total_profit=0.0,
     )

@@ -21,6 +21,7 @@ class Client(SQLModel, table=True):
     company: str
     contact_email: str
     commercial_id: int = Field(index=True)
+    status: str = Field(default="lead")
     total_billed: float = Field(default=0.0)
     total_profit: float = Field(default=0.0)
 

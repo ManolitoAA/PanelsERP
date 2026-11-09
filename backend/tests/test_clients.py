@@ -82,3 +82,26 @@ def test_commercial_isolation_and_rbac(client_env):
     res_admin = tc.get("/api/clients", headers=admin)
     assert res_admin.status_code == 200
     assert any(c["id"] == client_id for c in res_admin.json())
+
+def _new(tc, h, name="Hans"):
+    return tc.post("/api/clients", json={"name": name, "company": "Bauhaus", "contact_email": "h@b.de"}, headers=h)
+
+def test_new_client_defaults_to_lead(client_env):
+    res = _new(client_env["client"], client_env["c1_headers"])
+    assert res.status_code == 201
+    assert res.json()["status"] == "lead"
+
+def test_filter_clients_by_status(client_env):
+    tc, h = client_env["client"], client_env["c1_headers"]
+    a = _new(tc, h, "A").json()["id"]
+    _new(tc, h, "B")
+    assert tc.put(f"/api/clients/{a}", json={"status": "cliente"}, headers=h).status_code == 200
+    res = tc.get("/api/clients?status=cliente", headers=h)
+    assert [c["id"] for c in res.json()] == [a]
+    assert len(tc.get("/api/clients?status=lead", headers=h).json()) == 1
+
+def test_invalid_status_rejected(client_env):
+    tc, h = client_env["client"], client_env["c1_headers"]
+    bad = tc.post("/api/clients", json={"name": "X", "company": "Y", "contact_email": "x@y.z", "status": "foo"}, headers=h)
+    assert bad.status_code == 422
+    assert tc.get("/api/clients?status=foo", headers=h).status_code == 422
