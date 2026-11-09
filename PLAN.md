@@ -56,8 +56,8 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 **Objetivo:** Gestión CRUD de clientes garantizando que cada comercial solo ve y edita sus propios registros, mientras jefes y administración tienen acceso de supervisión.
 
 **Tareas:**
-- [ ] Crear router `backend/src/routers/clients.py` con filtrado por rol y propiedad de comercial.
-- [ ] Asegurar asignación automática del comercial creador.
+- [x] Crear router `backend/src/routers/clients.py` con filtrado por rol y propiedad de comercial.
+- [x] Asegurar asignación automática del comercial creador.
 
 **Pruebas:**
 - `pytest backend/tests/test_clients.py` prueba que el Comercial A no puede ver clientes del Comercial B (Caso 2 del spec), mientras que el Jefe ve todos.

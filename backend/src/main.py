@@ -6,11 +6,11 @@ from sqlmodel import Session, select
 from src.auth import create_access_token, get_current_user, hash_password, verify_password
 from src.db import create_db_and_tables, get_session
 from src.models import RoleEnum, User
+from src.routers import clients
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_db_and_tables()
-    # Seed an admin/jefe if no users exist
     yield
 
 app = FastAPI(title="PanelsERP API", version="0.1.0", lifespan=lifespan)
@@ -22,6 +22,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(clients.router)
 
 class LoginRequest(BaseModel):
     email: str
