@@ -91,6 +91,10 @@ def find_missing(draft: OrderDraft, clients: List[Client]) -> List[str]:
             missing.append(f"Falta el coste unitario de {it.product_name}.")
         if it.unit_price is None and it.margin_pct is None:
             missing.append(f"Falta el precio o el margen de {it.product_name}.")
+        if (it.unit_price or 0) < 0 or (it.unit_cost or 0) < 0:
+            missing.append(f"El precio y el coste de {it.product_name} no pueden ser negativos.")
+        if it.unit_price is None and (it.margin_pct or 0) >= 100:
+            missing.append(f"El margen de {it.product_name} debe ser menor del 100 %.")
     return missing
 
 

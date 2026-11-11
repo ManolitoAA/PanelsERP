@@ -9,7 +9,9 @@ from sqlmodel import Session, select
 from src.db import get_session
 from src.models import RoleEnum, User
 
-SECRET_KEY = os.getenv("SECRET_KEY", "super-secret-key-change-in-production")
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("Falta SECRET_KEY en .env: sin ella cualquiera podría firmar tokens válidos")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "480"))
 

@@ -37,7 +37,8 @@ def create_order(session: Session, user: User, client_id: int, items: List[ItemC
     if user.role not in (RoleEnum.COMERCIAL, RoleEnum.JEFE):
         raise OrderError(403, "Not enough permissions")
 
-    client = session.get(Client, client_id)
+    # bloquea la fila: dos pedidos a la vez (web y bot) no se pisan los totales del cliente
+    client = session.get(Client, client_id, with_for_update=True)
     if not client:
         raise OrderError(404, "Client not found")
     if user.role == RoleEnum.COMERCIAL and client.commercial_id != user.id:
@@ -57,8 +58,7 @@ def create_order(session: Session, user: User, client_id: int, items: List[ItemC
         net_profit=order_profit,
     )
     session.add(order)
-    session.commit()
-    session.refresh(order)
+    session.flush()  # solo para tener order.id: pedido, líneas y totales van en un único commit
 
     item_dicts = []
     for it in computed_items:

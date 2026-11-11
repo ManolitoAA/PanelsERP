@@ -43,10 +43,10 @@ cd backend && set -a && . ../.env && set +a && ../.venv/bin/python -m src.seed &
 
 ### Opción B: SQLite (sin Docker)
 
-Sin `DATABASE_URL` el backend usa el archivo `backend/panelserp.db`:
+Sin `DATABASE_URL` el backend usa el archivo `backend/panelserp.db`. `SECRET_KEY` sigue siendo obligatoria (ver `.env.example`):
 
 ```bash
-cd backend && ../.venv/bin/python -m src.seed && ../.venv/bin/uvicorn src.main:app --reload --port 8000
+cd backend && set -a && . ../.env && set +a && ../.venv/bin/python -m src.seed && ../.venv/bin/uvicorn src.main:app --reload --port 8000
 ```
 
 ### Frontend

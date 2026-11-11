@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from sqlmodel import Session, select
+from sqlmodel import Session, func, or_, select
 from src.auth import get_current_user, require_roles
 from src.db import get_session
 from src.models import Order, RoleEnum, User
@@ -67,17 +67,17 @@ def get_billing_report(
     current_user: User = Depends(require_roles([RoleEnum.JEFE, RoleEnum.ADMIN_RRHH])),
     session: Session = Depends(get_session)
 ):
-    commercials = session.exec(select(User).where(User.role == RoleEnum.COMERCIAL)).all()
-    report = []
-    for com in commercials:
-        orders = session.exec(select(Order).where(Order.commercial_id == com.id)).all()
-        total_billed = round(sum(o.total_billed for o in orders), 2)
-        total_profit = round(sum(o.net_profit for o in orders), 2)
-        report.append(CommercialReport(
-            commercial_id=com.id,
-            commercial_name=com.name,
-            total_billed=total_billed,
-            total_profit=total_profit,
-            order_count=len(orders)
-        ))
-    return report
+    # todo el que tenga pedidos (también el jefe con clientes propios) y los comerciales aunque no tengan
+    rows = session.exec(
+        select(User.id, User.name,
+               func.coalesce(func.sum(Order.total_billed), 0.0),
+               func.coalesce(func.sum(Order.net_profit), 0.0),
+               func.count(Order.id))
+        .outerjoin(Order, Order.commercial_id == User.id)
+        .group_by(User.id, User.name, User.role)
+        .having(or_(User.role == RoleEnum.COMERCIAL, func.count(Order.id) > 0))
+        .order_by(User.id)
+    ).all()
+    return [CommercialReport(commercial_id=uid, commercial_name=name, total_billed=round(billed, 2),
+                             total_profit=round(profit, 2), order_count=count)
+            for uid, name, billed, profit, count in rows]

@@ -100,3 +100,12 @@ def test_new_client_missing_fields_and_bad_email():
 def test_new_client_duplicate_company():
     draft = OrderDraft(new_client=NewClient(name="Otro", company=" bauhaus ", contact_email="o@b.de"))
     assert find_missing(draft, CLIENTS) == ["Ya tienes un cliente de Bauhaus: Hans. Dime si es para él o /cancelar."]
+
+
+def test_negative_values_and_full_margin_are_asked_again():
+    draft = OrderDraft(client_id=10, items=[
+        DraftItem(product_name="A", quantity=1, unit_price=-15, unit_cost=9),
+        DraftItem(product_name="B", quantity=1, unit_cost=9, margin_pct=100),
+    ])
+    assert find_missing(draft, CLIENTS) == ["El precio y el coste de A no pueden ser negativos.",
+                                            "El margen de B debe ser menor del 100 %."]

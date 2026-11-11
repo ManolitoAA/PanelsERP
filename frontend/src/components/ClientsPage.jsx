@@ -9,10 +9,11 @@ const FILTERS = [['', 'Todos'], ['lead', 'Leads'], ['cliente', 'Clientes']];
 export default function ClientsPage() {
   const [version, setVersion] = useState(0);
   const [status, setStatus] = useState('');
+  const readOnly = localStorage.getItem('role') === 'admin_rrhh';
   return (
     <AppShell active="clients" title="Clientes y leads">
       <div className="flex flex-col gap-6">
-        <Card title="Nuevo registro"><ClientForm onCreated={() => setVersion(v => v + 1)} /></Card>
+        {!readOnly && <Card title="Nuevo registro"><ClientForm onCreated={() => setVersion(v => v + 1)} /></Card>}
         <Card>
           <div className="flex gap-2 mb-4">
             {FILTERS.map(([value, label]) => (

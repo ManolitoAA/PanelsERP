@@ -11,7 +11,7 @@ Foco opcional que ha pedido el usuario (si está vacío, prueba todo): $ARGUMENT
 No toques la base de datos del usuario ni sus servidores (8000/4321). Usa puertos propios y una SQLite temporal:
 
 - Backend, en segundo plano (`run_in_background`), desde `backend/`:
-  `rm -f test-app.db && DATABASE_URL=sqlite:///./test-app.db ../.venv/bin/python -m src.seed --demo && DATABASE_URL=sqlite:///./test-app.db ../.venv/bin/uvicorn src.main:app --port 8002`
+  `rm -f test-app.db && SECRET_KEY=test-app-only-secret-at-least-32-bytes DATABASE_URL=sqlite:///./test-app.db ../.venv/bin/python -m src.seed --demo && SECRET_KEY=test-app-only-secret-at-least-32-bytes DATABASE_URL=sqlite:///./test-app.db ../.venv/bin/uvicorn src.main:app --port 8002`
 - Frontend, en segundo plano, desde `frontend/`:
   `PUBLIC_API_URL=http://localhost:8002 npm run dev -- --port 4323`
 - Espera a que respondan `http://localhost:8002/api/health` y `http://localhost:4323` (reintenta con `curl -s` unos segundos). Si alguno no arranca, lee su salida, para y repórtalo como error.

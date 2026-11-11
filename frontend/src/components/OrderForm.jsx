@@ -38,7 +38,7 @@ export default function OrderForm({ clientId, onSuccess }) {
           product_name: it.product_name,
           quantity: Number(it.quantity),
           ...(it.unit_price ? { unit_price: Number(it.unit_price) } : {}),
-          ...(it.unit_cost ? { unit_cost: Number(it.unit_cost) } : {}),
+          unit_cost: Number(it.unit_cost),
         })),
       };
       const res = await fetch(`${API_BASE}/api/orders`, {
@@ -78,10 +78,10 @@ export default function OrderForm({ clientId, onSuccess }) {
           <input type="number" placeholder="Cant." min="1" value={it.quantity}
             onChange={e => updateItem(idx, 'quantity', e.target.value)}
             className="border rounded px-2 py-1" />
-          <input type="number" placeholder="Precio €" step="0.01" value={it.unit_price}
+          <input type="number" placeholder="Precio €" step="0.01" min="0" value={it.unit_price}
             onChange={e => updateItem(idx, 'unit_price', e.target.value)}
             className="border rounded px-2 py-1" />
-          <input type="number" placeholder="Coste €" step="0.01" value={it.unit_cost}
+          <input type="number" placeholder="Coste €" step="0.01" min="0" required value={it.unit_cost}
             onChange={e => updateItem(idx, 'unit_cost', e.target.value)}
             className="border rounded px-2 py-1" />
           <input name="margin" readOnly tabIndex={-1} aria-label="Margen %" value={`${calcItem(it).margin} %`}

@@ -151,6 +151,23 @@ test.describe.serial('flujo comercial y supervisión', () => {
   });
 });
 
+test('clientes: RRHH no ve el formulario de alta ni el enlace a nuevo pedido', async ({ page, request }) => {
+  // asegura al menos un cliente aunque el test corra solo
+  const api = 'http://localhost:8001/api';
+  const auth = await request.post(`${api}/auth/login`, { data: { email: 'comercial2@panelserp.com', password: 'password123' } });
+  const { access_token } = await auth.json();
+  await request.post(`${api}/clients`, {
+    headers: { Authorization: `Bearer ${access_token}` },
+    data: { name: 'Cliente RRHH', company: 'Visible SL', contact_email: 'rrhh@visible.example' },
+  });
+  await login(page, 'admin@panelserp.com');
+  await page.goto('/clients');
+  await expect(page.getByRole('heading', { name: 'Clientes y leads' })).toBeVisible();
+  await expect(page.locator('table tbody tr').first()).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Crear cliente' })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Nuevo pedido' })).toHaveCount(0);
+});
+
 test('la barra lateral resalta la sección activa y permite navegar', async ({ page }) => {
   await login(page, 'comercial1@panelserp.com');
   const nav = page.getByRole('navigation');

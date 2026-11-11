@@ -75,7 +75,7 @@ def test_flexible_margin_input_order(order_env):
     c1 = order_env["c1_headers"]
     client_id = order_env["client_id"]
 
-    # Commercial provides unit_cost and margin_pct (e.g. 50% margin)
+    # Commercial provides unit_cost and margin_pct (margen sobre precio de venta)
     payload = {
         "client_id": client_id,
         "items": [
@@ -85,9 +85,9 @@ def test_flexible_margin_input_order(order_env):
     res = tc.post("/api/orders", json=payload, headers=c1)
     assert res.status_code == 201
     data = res.json()
-    # Cost = 10, Margin = 50% => Price = 15 => Total = 1500, Profit = 500
-    assert data["total_billed"] == 1500.0
-    assert data["net_profit"] == 500.0
+    # Cost = 10, Margin 50% of price => Price = 20 => Total = 2000, Profit = 1000
+    assert data["total_billed"] == 2000.0
+    assert data["net_profit"] == 1000.0
 
 def test_billing_report_by_commercial(order_env):
     tc = order_env["client"]
@@ -103,3 +103,35 @@ def test_admin_rrhh_cannot_create_orders(order_env):
     payload = {"client_id": order_env["client_id"], "items": [{"product_name": "X", "quantity": 1, "unit_price": 1.0, "unit_cost": 0.5}]}
     assert tc.post("/api/orders", json=payload, headers=admin).status_code == 403
     assert tc.get("/api/orders", headers=admin).status_code == 200
+
+def test_jefe_owned_orders_appear_in_billing_report(order_env):
+    tc, jefe = order_env["client"], order_env["jefe_headers"]
+    client_id = tc.post("/api/clients", json={"name": "Ana", "company": "Budmax", "contact_email": "a@b.pl"},
+                        headers=jefe).json()["id"]
+    items = [{"product_name": "P", "quantity": 10, "unit_price": 15.0, "unit_cost": 9.0}]
+    assert tc.post("/api/orders", json={"client_id": client_id, "items": items}, headers=jefe).status_code == 201
+    assert tc.post("/api/orders", json={"client_id": order_env["client_id"], "items": items},
+                   headers=order_env["c1_headers"]).status_code == 201
+
+    report = tc.get("/api/reports/billing", headers=order_env["admin_headers"]).json()
+    by_name = {r["commercial_name"]: r for r in report}
+    assert by_name["Jefe Global"]["total_billed"] == 150.0
+    assert by_name["Comercial Uno"]["order_count"] == 1
+    stats = tc.get("/api/stats", headers=order_env["admin_headers"]).json()["totals"]
+    assert sum(r["total_billed"] for r in report) == stats["billed"]
+
+def test_billing_report_lists_commercial_without_orders(order_env):
+    report = order_env["client"].get("/api/reports/billing", headers=order_env["admin_headers"]).json()
+    assert report == [{"commercial_id": 1, "commercial_name": "Comercial Uno",
+                       "total_billed": 0.0, "total_profit": 0.0, "order_count": 0}]
+
+@pytest.mark.parametrize("bad", [
+    {"quantity": 0}, {"quantity": -5}, {"unit_price": -15.0}, {"unit_cost": -1.0},
+    {"unit_price": None, "margin_pct": 100.0}, {"unit_cost": None},
+])
+def test_invalid_order_lines_are_rejected(order_env, bad):
+    line = {"product_name": "P", "quantity": 10, "unit_price": 15.0, "unit_cost": 9.0, **bad}
+    line = {k: v for k, v in line.items() if v is not None}
+    res = order_env["client"].post("/api/orders", json={"client_id": order_env["client_id"], "items": [line]},
+                                   headers=order_env["c1_headers"])
+    assert res.status_code == 422

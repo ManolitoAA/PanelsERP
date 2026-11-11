@@ -49,7 +49,7 @@ export default function ClientList({ status = '' }) {
           </td>
           <td className="px-4 py-3 text-right tabular-nums">{c.total_billed.toFixed(2)}</td>
           <td className="px-4 py-3 text-right tabular-nums text-emerald-700">{c.total_profit.toFixed(2)}</td>
-          <td className="px-4 py-3"><a href={`/orders/new?client_id=${c.id}`} className="text-brand-600 hover:underline font-medium">Nuevo pedido</a></td>
+          <td className="px-4 py-3">{!readOnly && <a href={`/orders/new?client_id=${c.id}`} className="text-brand-600 hover:underline font-medium">Nuevo pedido</a>}</td>
         </tr>
       ))}
     </Table>

@@ -12,7 +12,7 @@ export default defineConfig({
     {
       command: `rm -f e2e.db && ../.venv/bin/python -m src.seed && ../.venv/bin/uvicorn src.main:app --port 8001`,
       cwd: '../backend',
-      env: { DATABASE_URL: DB },
+      env: { DATABASE_URL: DB, SECRET_KEY: 'e2e-only-secret-at-least-32-bytes-long' },
       url: 'http://localhost:8001/api/health',
       reuseExistingServer: false,
     },
