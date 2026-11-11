@@ -162,8 +162,9 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 - [x] `ui.jsx` rehecho (tarjetas KPI, badges, avatares, campos con etiqueta, estados vacíos), `BarChart.jsx`, `icons.jsx` y `format.js` con pruebas `node --test`.
 - [x] Barra lateral oscura con iconos, saludo según la hora y menú móvil a pantalla completa.
 - [x] Login como portada: titular, dato del Caso 1 y maqueta del dashboard en HTML.
+- [x] Favicon `public/favicon.svg` enlazado en el layout (sin 404 en consola).
 - [x] Dashboard con KPI de margen, atajos y supervisión con margen y barra de cuota; pedido nuevo con resumen en vivo y aviso de venta bajo coste.
 
-**Pruebas:** `npm run test:unit` (5) y `npm run test:e2e` (19) en verde; `astro build` compila; capturas con `SHOTS=1 npm run test:e2e -- screenshots`.
+**Pruebas:** `npm run test:unit` (5) y `npm run test:e2e` (20) en verde; `astro build` compila; capturas con `SHOTS=1 npm run test:e2e -- screenshots`.
 
 **Hecho cuando:** todo lo anterior pasa y las capturas a 1440 y 390 px se revisan a ojo.

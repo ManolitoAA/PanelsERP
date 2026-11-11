@@ -256,3 +256,14 @@ test('pedido con venta por debajo del coste avisa en el resumen', async ({ page 
   await expect(page.getByTestId('order-profit')).toHaveText('-30.00 €');
   await expect(page.getByText('Este pedido vende por debajo del coste.')).toBeVisible();
 });
+
+test('la página declara un favicon que existe (sin 404 en consola)', async ({ page, request }) => {
+  const notFound: string[] = [];
+  page.on('response', r => { if (r.status() === 404) notFound.push(r.url()); });
+  await page.goto('/');
+  const href = await page.locator('link[rel="icon"]').getAttribute('href');
+  expect(href).toBeTruthy();
+  expect((await request.get(href!)).status()).toBe(200);
+  await page.waitForLoadState('networkidle');
+  expect(notFound).toEqual([]);
+});
