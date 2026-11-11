@@ -26,7 +26,11 @@ export default function OrderForm({ clientId, onSuccess }) {
 
   useEffect(() => {
     fetch(`${API_BASE}/api/products`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
-      .then(r => r.ok ? r.json() : []).then(p => setOptions(variantOptions(p))).catch(() => {});
+      .then(r => r.ok ? r.json() : []).then(p => {
+        const opts = variantOptions(p);
+        setOptions(opts);
+        setItems(prev => prev.map(it => pickVariant(it, opts)));  // lo escrito antes de que llegue el catálogo también se vincula
+      }).catch(() => {});
   }, []);
 
   function updateItem(idx, field, val) {

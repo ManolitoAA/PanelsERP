@@ -168,3 +168,39 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 **Pruebas:** `npm run test:unit` (5) y `npm run test:e2e` (20) en verde; `astro build` compila; capturas con `SHOTS=1 npm run test:e2e -- screenshots`.
 
 **Hecho cuando:** todo lo anterior pasa y las capturas a 1440 y 390 px se revisan a ojo.
+
+---
+
+## Fase 9 · Catálogo de productos desde PDF
+
+> *Spec:* [`docs/superpowers/specs/2026-11-11-catalogo-productos-fichas-design.md`](docs/superpowers/specs/2026-11-11-catalogo-productos-fichas-design.md) · *Plan:* [`docs/superpowers/plans/2026-11-11-fase-9-catalogo-productos.md`](docs/superpowers/plans/2026-11-11-fase-9-catalogo-productos.md)
+
+**Objetivo:** catálogo compartido de modelos y variantes que comerciales y jefe importan desde un PDF (Gemini), con revisión y resolución de conflictos, y que se usa al crear pedidos en la web y en el bot.
+
+**Tareas:**
+- [x] Modelos `Product` / `ProductVariant` y `OrderItem.variant_id` (con `ALTER TABLE` idempotente para bases existentes).
+- [x] `services/catalog_service.py`: duplicados por referencia o nombre + medidas normalizadas; crear / sobrescribir (solo autor o jefe) / mantener / descartar; 409 si el borrador quedó desfasado.
+- [x] `services/catalog_parser.py`: Gemini lee el PDF (también escaneado); probado con el catálogo real (15 modelos, 66 variantes en una llamada).
+- [x] API `/api/products`, `/api/variants/{id}`, `/api/catalog/import` y `/confirm`; `admin_rrhh` solo lectura.
+- [x] Pedidos con `variant_id`: precio y coste salen del catálogo si no se escriben.
+- [x] El bot de Telegram reconoce variantes del catálogo.
+- [x] Página Catálogo con pantalla de revisión y buscador de variantes en el pedido.
+
+**Pruebas:** `pytest` en `backend/` (121 + 1 Postgres opcional), `npm run test:unit` (13) y `npm run test:e2e` (24 + 2 capturas) en verde; `astro build` compila.
+
+**Hecho cuando:** un PDF importado se revisa, los conflictos se resuelven según permisos y un pedido elige una variante con su precio y coste.
+
+---
+
+## Fase 10 · Fichas técnicas
+
+> *Spec:* [`docs/superpowers/specs/2026-11-11-catalogo-productos-fichas-design.md`](docs/superpowers/specs/2026-11-11-catalogo-productos-fichas-design.md)
+
+**Objetivo:** generar la ficha técnica en PDF de cada modelo con el diseño de `Fichas-Panelchok` (`ficha_tex()` + `panelchok.sty` + `tectonic`).
+
+**Tareas:**
+- [ ] Assets de LaTeX en `backend/datasheet_assets/` y `services/datasheet.py` con `latex_escape`.
+- [ ] Subida de imágenes por producto y `GET /api/products/{id}/datasheet.pdf`.
+- [ ] Botón «Ficha técnica» en Catálogo.
+
+**Hecho cuando:** la ficha de un modelo importado se descarga y coincide en diseño con las de `Fichas-Panelchok`.
