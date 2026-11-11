@@ -32,3 +32,13 @@ def test_add_missing_columns_without_table_does_nothing():
     engine = create_engine("sqlite://", poolclass=StaticPool)
     add_missing_columns(engine)
     assert not inspect(engine).has_table("orderitem")
+
+
+def test_add_missing_columns_upgrades_old_order_table():
+    engine = create_engine("sqlite://", poolclass=StaticPool)
+    with engine.begin() as c:
+        c.exec_driver_sql('CREATE TABLE "order" (id INTEGER PRIMARY KEY, client_id INTEGER, status VARCHAR)')
+    add_missing_columns(engine)
+    add_missing_columns(engine)  # idempotente
+    cols = {col["name"] for col in inspect(engine).get_columns("order")}
+    assert {"courier_id", "tracking_code"} <= cols

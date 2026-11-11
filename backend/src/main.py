@@ -6,7 +6,7 @@ from sqlmodel import Session, select
 from src.auth import create_access_token, get_current_user, hash_password, verify_password
 from src.db import create_db_and_tables, get_session
 from src.models import RoleEnum, User
-from src.routers import catalog, clients, orders, stats, suppliers, templates
+from src.routers import catalog, clients, couriers, orders, stats, suppliers, templates
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -29,6 +29,7 @@ app.include_router(suppliers.router)
 app.include_router(templates.router)
 app.include_router(stats.router)
 app.include_router(catalog.router)
+app.include_router(couriers.router)
 
 class LoginRequest(BaseModel):
     email: str

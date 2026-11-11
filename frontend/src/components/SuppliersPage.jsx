@@ -3,6 +3,7 @@ import AppShell from './AppShell.jsx';
 import { API_BASE, authHeaders } from './api.js';
 import { Card, Table, Button, Field, Empty, ErrorNote, Person, inputClass, rowClass, cellClass } from './ui.jsx';
 import Icon from './icons.jsx';
+import CouriersCard from './CouriersCard.jsx';
 
 const COLUMNS = [{ label: 'Proveedor' }, { label: 'Contacto' }, { label: 'Notas' }];
 
@@ -49,6 +50,7 @@ export default function SuppliersPage() {
             </Table>
           ) : <Empty icon="truck">Sin proveedores todavía.</Empty>}
         </Card>
+        <CouriersCard readOnly={localStorage.getItem('role') === 'admin_rrhh'} style={{ '--i': 2 }} />
       </div>
     </AppShell>
   );

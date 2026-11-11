@@ -1,12 +1,14 @@
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlmodel import Session, func, or_, select
 from src.auth import get_current_user, require_roles
 from src.db import get_session
-from src.models import Order, RoleEnum, User
+from src.models import Courier, Order, RoleEnum, User
 from src.services.order_service import OrderError, create_order as create_order_service
 from src.services.profit_calculator import ItemCalculationInput
+from src.services.shipping import tracking_link, update_shipping
 
 router = APIRouter(tags=["orders"])
 
@@ -22,6 +24,26 @@ class OrderResponse(BaseModel):
     total_billed: float
     net_profit: float
     items: List[dict] = []
+    created_at: Optional[datetime] = None
+    courier_id: Optional[int] = None
+    courier_name: Optional[str] = None
+    courier_phone: Optional[str] = None
+    tracking_code: Optional[str] = None
+    tracking_url: Optional[str] = None
+
+class ShippingUpdate(BaseModel):
+    courier_id: Optional[int] = None
+    tracking_code: Optional[str] = None
+    status: Optional[str] = None
+
+def _order_response(o: Order, courier: Optional[Courier]) -> OrderResponse:
+    return OrderResponse(
+        id=o.id, client_id=o.client_id, commercial_id=o.commercial_id, status=o.status,
+        total_billed=o.total_billed, net_profit=o.net_profit, created_at=o.created_at,
+        courier_id=o.courier_id, courier_name=courier.name if courier else None,
+        courier_phone=courier.support_phone if courier else None,
+        tracking_code=o.tracking_code, tracking_url=tracking_link(courier, o.tracking_code),
+    )
 
 class CommercialReport(BaseModel):
     commercial_id: int
@@ -50,17 +72,22 @@ def list_orders(
         statement = select(Order).where(Order.commercial_id == current_user.id)
     else:
         statement = select(Order)
-    orders = session.exec(statement).all()
-    return [
-        OrderResponse(
-            id=o.id,
-            client_id=o.client_id,
-            commercial_id=o.commercial_id,
-            status=o.status,
-            total_billed=o.total_billed,
-            net_profit=o.net_profit,
-        ) for o in orders
-    ]
+    orders = session.exec(statement.order_by(Order.id.desc())).all()
+    couriers = {c.id: c for c in session.exec(select(Courier)).all()}
+    return [_order_response(o, couriers.get(o.courier_id)) for o in orders]
+
+@router.patch("/api/orders/{order_id}/shipping", response_model=OrderResponse)
+def set_shipping(
+    order_id: int,
+    payload: ShippingUpdate,
+    current_user: User = Depends(require_roles([RoleEnum.COMERCIAL, RoleEnum.JEFE])),
+    session: Session = Depends(get_session)
+):
+    try:
+        order = update_shipping(session, current_user, order_id, payload.model_dump(exclude_unset=True))
+    except OrderError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+    return _order_response(order, session.get(Courier, order.courier_id) if order.courier_id else None)
 
 @router.get("/api/reports/billing", response_model=List[CommercialReport])
 def get_billing_report(

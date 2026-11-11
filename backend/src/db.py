@@ -9,12 +9,19 @@ connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite")
 
 engine = create_engine(DATABASE_URL, echo=False, connect_args=connect_args)
 
+NEW_COLUMNS = [
+    ("orderitem", "variant_id", "INTEGER"),
+    ("order", "courier_id", "INTEGER"),
+    ("order", "tracking_code", "VARCHAR"),
+]
+
 def add_missing_columns(db_engine) -> None:
     """create_all no añade columnas a tablas ya creadas: las nuevas se añaden aquí."""
     insp = inspect(db_engine)
-    if insp.has_table("orderitem") and "variant_id" not in {c["name"] for c in insp.get_columns("orderitem")}:
-        with db_engine.begin() as conn:
-            conn.exec_driver_sql("ALTER TABLE orderitem ADD COLUMN variant_id INTEGER")
+    for table, column, sql_type in NEW_COLUMNS:
+        if insp.has_table(table) and column not in {c["name"] for c in insp.get_columns(table)}:
+            with db_engine.begin() as conn:
+                conn.exec_driver_sql(f'ALTER TABLE "{table}" ADD COLUMN {column} {sql_type}')
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)

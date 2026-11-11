@@ -29,10 +29,12 @@ class Order(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     client_id: int = Field(index=True)
     commercial_id: int = Field(index=True)
-    status: str = Field(default="completado")
+    status: str = Field(default="en curso")
     total_billed: float = Field(default=0.0)
     net_profit: float = Field(default=0.0)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    courier_id: Optional[int] = Field(default=None, index=True)
+    tracking_code: Optional[str] = None
 
 class OrderItem(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -56,6 +58,13 @@ class Supplier(SQLModel, table=True):
     name: str
     contact_info: str
     notes: Optional[str] = None
+
+class Courier(SQLModel, table=True):
+    """Empresa de mensajería: el teléfono para reclamar y la web de seguimiento se guardan una vez."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    support_phone: Optional[str] = None
+    tracking_url: Optional[str] = None  # con {tracking}, p. ej. https://.../track?id={tracking}
 
 class Template(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

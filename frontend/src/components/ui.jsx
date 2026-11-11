@@ -105,12 +105,13 @@ export function Field({ label, children, className = '' }) {
 const BADGES = {
   lead: 'bg-amber-50 text-amber-800 ring-amber-200',
   cliente: 'bg-emerald-50 text-emerald-800 ring-emerald-200',
+  enviado: 'bg-accent-50 text-accent-800 ring-accent-100',
   default: 'bg-mist text-night ring-night/10',
 };
 
 export function Badge({ tone = 'default', children }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset capitalize ${BADGES[tone] || BADGES.default}`}>
+    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset capitalize ${BADGES[tone] || BADGES.default}`}>
       <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
       {children}
     </span>

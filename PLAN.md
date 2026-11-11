@@ -204,3 +204,22 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 - [ ] Botón «Ficha técnica» en Catálogo.
 
 **Hecho cuando:** la ficha de un modelo importado se descarga y coincide en diseño con las de `Fichas-Panelchok`.
+
+---
+
+## Fase 11 · Envíos y seguimiento de pedidos
+
+**Objetivo:** cuando un cliente llama preguntando por su pedido, encontrarlo rápido y ver la mensajería, el tracking (con enlace) y el teléfono de atención de la mensajería para reclamar.
+
+**Tareas:**
+- [x] Modelo `Courier` (nombre, teléfono de atención, web de seguimiento con `{tracking}`) y `Order.courier_id` / `tracking_code` (columnas añadidas con `add_missing_columns`).
+- [x] Estados `en curso` → `enviado` → `entregado`; los pedidos nuevos nacen `en curso` y pasan a `enviado` al poner mensajería y tracking. Los antiguos siguen `completado`.
+- [x] `services/shipping.py`: estados, permisos (comercial dueño o jefe) y enlace con el código escapado; solo URLs `http(s)`.
+- [x] API `/api/couriers` y `PATCH /api/orders/{id}/shipping`; `GET /api/orders` devuelve mensajería, teléfono y enlace.
+- [x] Pedidos: columna Envío (enlace, copiar tracking, `tel:`), modal de envío con alta rápida de mensajería y buscador por cliente, tracking o nº.
+- [x] Proveedores: tarjeta Mensajerías para dar de alta y editar (RRHH solo lectura).
+
+**Pruebas:** `pytest` en `backend/` (140 + 1 Postgres opcional), `npm run test:unit` (17) y `npm run test:e2e` (25 + 2 capturas) en verde; `astro build` compila.
+
+**Hecho cuando:** un pedido en curso recibe mensajería y tracking, aparece como enviado con su enlace y teléfono, y se encuentra buscando el tracking.
+

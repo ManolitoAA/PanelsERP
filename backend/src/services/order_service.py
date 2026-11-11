@@ -69,7 +69,7 @@ def create_order(session: Session, user: User, client_id: int, items: List[ItemC
     order = Order(
         client_id=client.id,
         commercial_id=client.commercial_id,
-        status="completado",
+        status="en curso",
         total_billed=order_billed,
         net_profit=order_profit,
     )
