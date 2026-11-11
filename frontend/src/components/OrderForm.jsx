@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Field, ErrorNote, inputClass } from './ui.jsx';
 import { marginPct } from './format.js';
+import { pickVariant, variantOptions } from './catalog.js';
 import Icon from './icons.jsx';
 
 function calcItem(item) {
@@ -21,9 +22,19 @@ export default function OrderForm({ clientId, onSuccess }) {
   const [items, setItems] = useState([{ ...EMPTY_ITEM }]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [options, setOptions] = useState([]);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/products`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+      .then(r => r.ok ? r.json() : []).then(p => setOptions(variantOptions(p))).catch(() => {});
+  }, []);
 
   function updateItem(idx, field, val) {
-    setItems(prev => prev.map((it, i) => i === idx ? { ...it, [field]: val } : it));
+    setItems(prev => prev.map((it, i) => {
+      if (i !== idx) return it;
+      const next = { ...it, [field]: val };
+      return field === 'product_name' ? pickVariant(next, options) : next;
+    }));
   }
 
   function addItem() {
@@ -42,6 +53,7 @@ export default function OrderForm({ clientId, onSuccess }) {
           quantity: Number(it.quantity),
           ...(it.unit_price ? { unit_price: Number(it.unit_price) } : {}),
           unit_cost: Number(it.unit_cost),
+          ...(it.variant_id ? { variant_id: it.variant_id } : {}),
         })),
       };
       const res = await fetch(`${API_BASE}/api/orders`, {
@@ -81,7 +93,7 @@ export default function OrderForm({ clientId, onSuccess }) {
             <div key={idx} style={{ '--i': idx }}
               className="enter grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-3 p-4 md:p-5 bg-white rounded-2xl border border-night/5 shadow-card">
               <Field label={`Línea ${idx + 1} · Producto`} className="col-span-2 md:col-span-1">
-                <input placeholder="Producto" required value={it.product_name}
+                <input placeholder="Producto" required value={it.product_name} list="catalog-variants"
                   onChange={e => updateItem(idx, 'product_name', e.target.value)} className={inputClass} />
               </Field>
               <Field label="Cantidad">
@@ -107,6 +119,9 @@ export default function OrderForm({ clientId, onSuccess }) {
             </div>
           );
         })}
+        <datalist id="catalog-variants">
+          {options.map(o => <option key={o.variant.id} value={o.label} />)}
+        </datalist>
         <button type="button" onClick={addItem}
           className="press self-start inline-flex items-center gap-2 rounded-xl border border-dashed border-night/20 px-4 min-h-[44px] text-sm font-medium text-slate-600 hover:border-accent-500 hover:text-accent-700 hover:bg-white">
           <Icon name="plus" className="h-4 w-4" />Añadir línea
