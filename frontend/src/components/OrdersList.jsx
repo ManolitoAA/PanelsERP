@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import AppShell from './AppShell.jsx';
 import { API_BASE, authHeaders } from './api.js';
-import { Card, Table, Empty } from './ui.jsx';
+import { Card, Table, Empty, ErrorNote, Badge, Person, rowClass, cellClass, moneyClass } from './ui.jsx';
+import { marginPct } from './format.js';
 
 const COLUMNS = [
   { label: 'Pedido' }, { label: 'Cliente' }, { label: 'Estado' },
-  { label: 'Facturado €', right: true }, { label: 'Beneficio €', right: true },
+  { label: 'Facturado €', right: true }, { label: 'Beneficio €', right: true }, { label: 'Margen', right: true },
 ];
 
 export default function OrdersList() {
@@ -28,21 +29,27 @@ export default function OrdersList() {
   }, []);
 
   return (
-    <AppShell active="orders" title="Pedidos">
+    <AppShell active="orders" title="Pedidos"
+      subtitle="Para crear un pedido, entra en Clientes y pulsa Nuevo pedido en su fila.">
       <Card>
-        {error && <p role="alert" className="text-red-600 text-sm">{error}</p>}
-        {orders && !orders.length && <Empty>Sin pedidos todavía.</Empty>}
+        {error && <ErrorNote>{error}</ErrorNote>}
+        {!orders && !error && <Empty icon="receipt">Cargando pedidos…</Empty>}
+        {orders && !orders.length && <Empty icon="receipt">Sin pedidos todavía.</Empty>}
         {orders && orders.length > 0 && (
           <Table columns={COLUMNS}>
-            {orders.map(o => (
-              <tr key={o.id} className="hover:bg-slate-50">
-                <td className="px-4 py-3">#{o.id}</td>
-                <td className="px-4 py-3 font-medium">{names[o.client_id] || `Cliente ${o.client_id}`}</td>
-                <td className="px-4 py-3 capitalize">{o.status}</td>
-                <td className="px-4 py-3 text-right tabular-nums">{o.total_billed.toFixed(2)}</td>
-                <td className="px-4 py-3 text-right tabular-nums text-emerald-700">{o.net_profit.toFixed(2)}</td>
-              </tr>
-            ))}
+            {orders.map(o => {
+              const name = names[o.client_id] || `Cliente ${o.client_id}`;
+              return (
+                <tr key={o.id} className={rowClass}>
+                  <td className={`${cellClass} font-mono text-slate-600`}>#{o.id}</td>
+                  <td className={cellClass}><Person name={name} /></td>
+                  <td className={cellClass}><Badge>{o.status}</Badge></td>
+                  <td className={moneyClass}>{o.total_billed.toFixed(2)}</td>
+                  <td className={`${moneyClass} text-emerald-700`}>{o.net_profit.toFixed(2)}</td>
+                  <td className={`${moneyClass} text-slate-600`}>{marginPct(o.total_billed, o.net_profit)}</td>
+                </tr>
+              );
+            })}
           </Table>
         )}
       </Card>

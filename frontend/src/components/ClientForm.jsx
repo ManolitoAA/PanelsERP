@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { API_BASE, authHeaders } from './api.js';
-import { Button, inputClass } from './ui.jsx';
+import { Button, Field, ErrorNote, inputClass } from './ui.jsx';
+import Icon from './icons.jsx';
 
 export default function ClientForm({ onCreated }) {
   const [form, setForm] = useState({ name: '', company: '', contact_email: '' });
@@ -18,14 +19,13 @@ export default function ClientForm({ onCreated }) {
     onCreated();
   }
 
-  const cls = inputClass;
   return (
-    <form onSubmit={submit} className="flex flex-wrap gap-2 mb-4">
-      <input name="client-name" placeholder="Nombre" required value={form.name} onChange={set('name')} className={cls} />
-      <input name="client-company" placeholder="Empresa" required value={form.company} onChange={set('company')} className={cls} />
-      <input name="client-email" type="email" placeholder="Email" required value={form.contact_email} onChange={set('contact_email')} className={cls} />
-      <Button type="submit">Crear cliente</Button>
-      {error && <p role="alert" className="text-sm text-red-600 w-full">{error}</p>}
+    <form onSubmit={submit} className="grid gap-3 grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto] items-end">
+      <Field label="Nombre"><input name="client-name" placeholder="Nombre" required value={form.name} onChange={set('name')} className={inputClass} /></Field>
+      <Field label="Empresa"><input name="client-company" placeholder="Empresa" required value={form.company} onChange={set('company')} className={inputClass} /></Field>
+      <Field label="Email"><input name="client-email" type="email" placeholder="Email" required value={form.contact_email} onChange={set('contact_email')} className={inputClass} /></Field>
+      <Button type="submit"><Icon name="plus" className="h-4 w-4" />Crear cliente</Button>
+      {error && <div className="md:col-span-4"><ErrorNote>{error}</ErrorNote></div>}
     </form>
   );
 }

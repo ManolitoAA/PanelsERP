@@ -1,9 +1,9 @@
 const SECTIONS = [
-  { key: 'dashboard', label: 'Dashboard', href: '/dashboard' },
-  { key: 'clients', label: 'Clientes', href: '/clients' },
-  { key: 'orders', label: 'Pedidos', href: '/orders' },
-  { key: 'suppliers', label: 'Proveedores', href: '/suppliers' },
-  { key: 'templates', label: 'Plantillas', href: '/templates' },
+  { key: 'dashboard', icon: 'dashboard', label: 'Dashboard', href: '/dashboard' },
+  { key: 'clients', icon: 'users', label: 'Clientes', href: '/clients' },
+  { key: 'orders', icon: 'receipt', label: 'Pedidos', href: '/orders' },
+  { key: 'suppliers', icon: 'truck', label: 'Proveedores', href: '/suppliers' },
+  { key: 'templates', icon: 'mail', label: 'Plantillas', href: '/templates' },
 ];
 
 // Los tres roles ven las mismas secciones; cambian los datos, no el menú.

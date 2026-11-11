@@ -1,13 +1,85 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import LoginForm from '../components/LoginForm.jsx';
+const roles = [
+  ['Comerciales', 'ven solo sus leads, clientes y pedidos'],
+  ['Dirección', 've a todo el equipo y sus márgenes'],
+  ['Administración', 'saca la facturación por comercial'],
+];
+const bars = [38, 52, 46, 70, 64, 88];
 ---
-<Layout title="Login">
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-900 to-brand-600 p-4">
-    <main class="w-full max-w-sm bg-white rounded-2xl shadow-xl p-8">
-      <h1 class="text-3xl font-bold text-brand-700 mb-1 text-center">PanelsERP</h1>
-      <p class="text-sm text-slate-500 text-center mb-6">Gestión comercial y exportación</p>
-      <LoginForm client:only="react" />
+<Layout title="Iniciar sesión">
+  <div class="min-h-screen grid lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+    <section class="relative overflow-hidden bg-night text-mist grid-glow px-6 py-8 md:px-12 md:py-12 flex flex-col">
+      <span class="enter flex items-center gap-2.5 text-white">
+        <span aria-hidden="true" class="grid place-items-center h-9 w-9 rounded-lg bg-accent-500 text-night font-semibold">P</span>
+        <span class="text-lg font-semibold tracking-display">PanelsERP</span>
+      </span>
+
+      <div class="flex-1 flex flex-col justify-center gap-8 pt-8 pb-2 md:py-8 lg:py-12 max-w-2xl">
+        <div class="enter" style="--i:1">
+          <h1 class="text-4xl md:text-5xl xl:text-6xl font-medium tracking-hero text-white leading-[1.04]">
+            El ERP comercial que calcula el beneficio de cada pedido
+          </h1>
+          <p class="mt-5 text-base md:text-lg text-night-400 max-w-xl">
+            200 perfiles a 15 € con coste de 9 €: ves <span class="text-white">1200.00 € de beneficio</span> y un
+            <span class="text-accent-500">40 % de margen</span> antes de guardar el pedido.
+          </p>
+        </div>
+
+        <div aria-hidden="true" class="enter hidden md:block rounded-2xl border border-white/10 bg-night-800/80 shadow-glow overflow-hidden" style="--i:2">
+          <div class="flex items-center gap-1.5 px-4 py-3 border-b border-white/10">
+            <span class="h-2.5 w-2.5 rounded-full bg-white/15"></span><span class="h-2.5 w-2.5 rounded-full bg-white/15"></span><span class="h-2.5 w-2.5 rounded-full bg-white/15"></span>
+            <span class="ml-3 text-xs text-night-400 font-mono">panelserp / dashboard</span>
+          </div>
+          <div class="grid grid-cols-[120px_1fr] min-h-[260px]">
+            <div class="border-r border-white/10 p-3 flex flex-col gap-1.5 text-xs">
+              <span class="rounded-md bg-white/10 text-white px-2 py-1.5 relative"><span class="absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded bg-accent-500"></span>Dashboard</span>
+              <span class="px-2 py-1.5 text-night-400">Clientes</span>
+              <span class="px-2 py-1.5 text-night-400">Pedidos</span>
+              <span class="px-2 py-1.5 text-night-400">Plantillas</span>
+            </div>
+            <div class="p-4 flex flex-col gap-4">
+              <div class="grid grid-cols-3 gap-3">
+                <div class="rounded-xl bg-white/5 border border-white/10 p-3"><p class="text-[11px] text-night-400">Facturado</p><p class="mt-1 font-mono text-lg text-white">3000.00 €</p></div>
+                <div class="rounded-xl bg-white/5 border border-white/10 p-3"><p class="text-[11px] text-night-400">Beneficio neto</p><p class="mt-1 font-mono text-lg text-emerald-400">1200.00 €</p></div>
+                <div class="rounded-xl bg-accent-500 text-night p-3"><p class="text-[11px] opacity-70">Margen</p><p class="mt-1 font-mono text-lg">40.0 %</p></div>
+              </div>
+              <div class="flex items-end gap-2 h-20 border-b border-white/15">
+                {bars.map((h, i) => <span class="bar flex-1 rounded-t bg-gradient-to-t from-accent-600 to-accent-400" style={`height:${h}%;--i:${i}`}></span>)}
+              </div>
+              <div class="flex items-center justify-between rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-xs font-mono">
+                <span class="text-mist">200 × Perfil polietileno</span>
+                <span class="text-night-400">15 € · coste 9 €</span>
+                <span class="text-emerald-400">+1200.00 €</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ul class="enter hidden md:grid gap-3 grid-cols-3 text-sm" style="--i:3">
+          {roles.map(([who, what]) => (
+            <li class="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+              <span class="block font-medium text-white">{who}</span>
+              <span class="block mt-1 text-night-400">{what}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    <main class="flex items-center justify-center bg-paper px-6 py-10 md:py-12">
+      <div class="enter w-full max-w-sm" style="--i:2">
+        <h2 class="text-2xl font-medium tracking-display text-night">Entra en tu panel</h2>
+        <p class="mt-2 mb-8 text-sm text-slate-600">Usa el email y la contraseña de tu cuenta de trabajo.</p>
+        <LoginForm client:only="react" />
+      </div>
     </main>
   </div>
 </Layout>
+
+<style>
+  @keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  .bar { transform-origin: bottom; animation: grow 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: calc(300ms + var(--i) * 70ms); }
+  @media (prefers-reduced-motion: reduce) { .bar { animation: none; } }
+</style>

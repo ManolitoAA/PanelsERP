@@ -4,13 +4,14 @@ import { test, expect } from '@playwright/test';
 
 test('login page renders with PanelsERP title and email/password fields', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('h1')).toContainText('PanelsERP');
+  await expect(page).toHaveTitle(/PanelsERP/);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('beneficio de cada pedido');
   await expect(page.locator('input[name="email"]')).toBeVisible();
   await expect(page.locator('input[name="password"]')).toBeVisible();
   const submit = page.getByRole('button', { name: 'Iniciar sesión' });
   await expect(submit).toBeVisible();
-  // el botón debe tener fondo de marca (si Tailwind no generó las clases quedaría blanco sobre blanco)
-  await expect(submit).toHaveCSS('background-color', 'rgb(43, 86, 212)');
+  // el botón debe tener el azul de acento (si Tailwind no generó las clases quedaría transparente)
+  await expect(submit).toHaveCSS('background-color', 'rgb(90, 185, 252)');
 });
 
 test('login with wrong credentials shows error message', async ({ page }) => {
@@ -49,7 +50,9 @@ test.describe.serial('flujo comercial y supervisión', () => {
     const margin = page.locator('input[name="margin"]');
     await expect(margin).toHaveValue('40.0 %');
     await expect(margin).not.toBeEditable();
-    await expect(page.getByText('Total: 3000.00 € · Beneficio: 1200.00 €', { exact: true })).toBeVisible();
+    await expect(page.getByTestId('order-total')).toHaveText('3000.00 €');
+    await expect(page.getByTestId('order-profit')).toHaveText('1200.00 €');
+    await expect(page.getByTestId('order-margin')).toHaveText('40.0 %');
     await page.click('button:has-text("Crear pedido")');
 
     await expect(page).toHaveURL(/.*\/orders$/);
@@ -122,6 +125,8 @@ test.describe.serial('flujo comercial y supervisión', () => {
     await expect(page.getByTestId('stat-facturado')).toContainText('3000.00');
     await expect(page.getByTestId('stat-beneficio-neto')).toContainText('1200.00');
     await expect(page.getByTestId('stat-pedidos')).toContainText('1');
+    await expect(page.getByTestId('stat-margen')).toContainText('40.0 %');
+    await expect(page.getByTestId('greeting')).toContainText(/Buen(os|as) (días|tardes|noches), Comercial/);
     await expect(page.getByRole('heading', { name: 'Ventas por día' })).toBeVisible();
     await expect(page.getByRole('combobox', { name: 'Comercial' })).toHaveCount(0);
   });
@@ -148,6 +153,7 @@ test.describe.serial('flujo comercial y supervisión', () => {
     const row = page.locator('tr', { hasText: 'Comercial Uno' });
     await expect(row).toContainText('3000.00');
     await expect(row).toContainText('1200.00');
+    await expect(row).toContainText('40.0 %');
   });
 });
 
@@ -228,4 +234,25 @@ test('dashboard: beneficio negativo hacia abajo, cero como marca y sin datos vac
 test('dashboard: avisa de que las fechas están en UTC', async ({ page }) => {
   await login(page, 'comercial1@panelserp.com');
   await expect(page.getByText(/UTC/).first()).toBeVisible();
+});
+
+test('dashboard: RRHH no ve el atajo de alta de cliente, comercial sí', async ({ page }) => {
+  await login(page, 'admin@panelserp.com');
+  await expect(page.getByRole('link', { name: /Ver pedidos/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Alta de cliente/ })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Cerrar sesión' }).click();
+  await login(page, 'comercial1@panelserp.com');
+  await page.getByRole('link', { name: /Alta de cliente/ }).click();
+  await expect(page).toHaveURL(/.*clients/);
+});
+
+test('pedido con venta por debajo del coste avisa en el resumen', async ({ page }) => {
+  await login(page, 'comercial1@panelserp.com');
+  await page.goto('/orders/new?client_id=1');
+  await page.fill('input[placeholder="Producto"]', 'Saldo');
+  await page.fill('input[placeholder="Cant."]', '10');
+  await page.fill('input[placeholder="Precio €"]', '5');
+  await page.fill('input[placeholder="Coste €"]', '8');
+  await expect(page.getByTestId('order-profit')).toHaveText('-30.00 €');
+  await expect(page.getByText('Este pedido vende por debajo del coste.')).toBeVisible();
 });

@@ -1,107 +1,154 @@
 import React from 'react';
+import Icon from './icons.jsx';
+import { initials } from './format.js';
 
-export function Card({ title, children, className = '', testId }) {
+export function Card({ title, children, className = '', testId, action, style }) {
   return (
-    <section data-testid={testId} className={`bg-white rounded-2xl shadow-card border border-slate-100 p-5 ${className}`}>
-      {title && <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">{title}</h3>}
+    <section data-testid={testId} style={style}
+      className={`enter bg-white rounded-2xl shadow-card border border-night/5 p-5 md:p-6 ${className}`}>
+      {(title || action) && (
+        <div className="flex items-center justify-between gap-3 mb-5">
+          {title && <h3 className="text-base font-semibold tracking-display text-night">{title}</h3>}
+          {action}
+        </div>
+      )}
       {children}
     </section>
   );
 }
 
-const TONES = { default: 'text-slate-900', good: 'text-emerald-600', brand: 'text-brand-600' };
+const TONES = {
+  default: { chip: 'bg-mist text-night', value: 'text-night' },
+  good: { chip: 'bg-emerald-50 text-emerald-700', value: 'text-emerald-700' },
+  brand: { chip: 'bg-accent-50 text-accent-700', value: 'text-night' },
+};
 
-export function StatCard({ label, value, tone = 'default' }) {
-  const id = `stat-${label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-')}`;
+export function StatCard({ label, value, tone = 'default', icon = 'trend', hint, hero = false, index = 0 }) {
+  const id = `stat-${label.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '-')}`;
+  if (hero) {
+    return (
+      <section data-testid={id} style={{ '--i': index }}
+        className="enter relative overflow-hidden rounded-2xl bg-night text-mist p-5 md:p-6 shadow-glow grid-glow">
+        <div className="flex items-center gap-2 text-sm text-night-400">
+          <span className="grid place-items-center h-8 w-8 rounded-lg bg-accent-500 text-night"><Icon name={icon} className="h-4 w-4" /></span>
+          {label}
+        </div>
+        <p className="mt-5 font-mono text-3xl md:text-4xl tabular-nums tracking-tight text-white">{value}</p>
+        {hint && <p className="mt-2 text-xs text-night-400">{hint}</p>}
+      </section>
+    );
+  }
+  const t = TONES[tone];
   return (
-    <Card testId={id}>
-      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">{label}</p>
-      <p className={`mt-2 text-3xl font-bold tabular-nums ${TONES[tone]}`}>{value}</p>
-    </Card>
+    <section data-testid={id} style={{ '--i': index }}
+      className="enter rounded-2xl bg-white border border-night/5 shadow-card p-5 md:p-6">
+      <div className="flex items-center gap-2 text-sm text-slate-600">
+        <span className={`grid place-items-center h-8 w-8 rounded-lg ${t.chip}`}><Icon name={icon} className="h-4 w-4" /></span>
+        {label}
+      </div>
+      <p className={`mt-5 font-mono text-3xl md:text-4xl tabular-nums tracking-tight ${t.value}`}>{value}</p>
+      {hint && <p className="mt-2 text-xs text-slate-600">{hint}</p>}
+    </section>
   );
 }
 
 export function Table({ columns, children }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto -mx-5 md:-mx-6">
       <table className="w-full text-sm text-left">
         <thead>
-          <tr className="text-xs uppercase tracking-wide text-slate-500 border-b border-slate-200">
+          <tr className="text-xs text-slate-600 border-y border-night/5 bg-paper/70">
             {columns.map(c => (
-              <th key={c.key || c.label} className={`px-4 py-3 font-semibold ${c.right ? 'text-right' : ''}`}>{c.label}</th>
+              <th key={c.key || c.label} className={`px-5 md:px-6 py-3 font-medium ${c.right ? 'text-right' : ''}`}>{c.label}</th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">{children}</tbody>
+        <tbody className="divide-y divide-night/5">{children}</tbody>
       </table>
     </div>
   );
 }
 
+export const rowClass = 'transition-colors hover:bg-accent-50/50';
+export const cellClass = 'px-5 md:px-6 py-3.5';
+export const moneyClass = `${cellClass} text-right font-mono tabular-nums`;
+
 const VARIANTS = {
-  primary: 'bg-brand-600 hover:bg-brand-700 text-white',
-  secondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300',
+  primary: 'bg-accent-500 hover:bg-accent-400 text-night shadow-[0_6px_20px_-8px_rgb(90_185_252/0.8)]',
+  secondary: 'bg-white hover:bg-paper text-night border border-night/10',
+  dark: 'bg-night hover:bg-night-700 text-white',
 };
 
 export function Button({ variant = 'primary', className = '', ...props }) {
   return (
     <button
       {...props}
-      className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors
-        focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:opacity-60 ${VARIANTS[variant]} ${className}`}
+      className={`press inline-flex items-center justify-center gap-2 rounded-xl px-4 min-h-[40px] text-sm font-medium
+        disabled:opacity-60 disabled:pointer-events-none ${VARIANTS[variant]} ${className}`}
     />
   );
 }
 
 export const inputClass =
-  'border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500';
+  'w-full border border-night/10 rounded-xl px-3 min-h-[40px] text-sm bg-white text-night placeholder:text-slate-400 transition-shadow ' +
+  'focus:ring-4 focus:ring-accent-100 focus:border-accent-700';
 
-export function Empty({ children = 'Sin datos' }) {
-  return <p className="text-sm text-slate-400 py-6 text-center">{children}</p>;
+export function Field({ label, children, className = '' }) {
+  return (
+    <label className={`flex flex-col gap-1.5 text-xs font-medium text-slate-600 ${className}`}>
+      {label}
+      {children}
+    </label>
+  );
 }
 
-const CHART_HEIGHT = 180;
-const fmt = (v, unit) => `${v.toLocaleString('es-ES')}${unit}`;
+const BADGES = {
+  lead: 'bg-amber-50 text-amber-800 ring-amber-200',
+  cliente: 'bg-emerald-50 text-emerald-800 ring-emerald-200',
+  default: 'bg-mist text-night ring-night/10',
+};
 
-// Columnas con eje en el 0: positivas hacia arriba, negativas hacia abajo (rojo),
-// valor 0 = marca fina sobre el eje, sin datos = <Empty />.
-export function BarChart({ name, data, unit = '' }) {
-  if (!data.length) return <Empty />;
-  const maxPos = Math.max(0, ...data.map(d => d.value));
-  const maxNeg = Math.max(0, ...data.map(d => -d.value));
-  const total = maxPos + maxNeg || 1;
-  const topH = (CHART_HEIGHT * maxPos) / total;
-  const bottomH = (CHART_HEIGHT * maxNeg) / total;
-
+export function Badge({ tone = 'default', children }) {
   return (
-    <div className="overflow-x-auto">
-      <ul className="flex gap-2 min-w-full">
-        {data.map(d => {
-          const kind = d.value > 0 ? 'positive' : d.value < 0 ? 'negative' : 'zero';
-          return (
-            <li key={d.label} className="flex flex-col items-stretch min-w-[56px] flex-1" title={`${d.label}: ${fmt(d.value, unit)}`}>
-              <div className="flex flex-col justify-end" style={{ height: topH }}>
-                {kind === 'positive' && (
-                  <div data-testid={`bar-${name}-${d.label}`} data-kind={kind} className="bg-brand-500 rounded-t"
-                    style={{ height: (d.value / maxPos) * topH }} />
-                )}
-              </div>
-              <div data-testid={`zero-line-${name}`} className="h-px bg-slate-400" />
-              <div style={{ height: bottomH }}>
-                {kind === 'zero' && (
-                  <div data-testid={`bar-${name}-${d.label}`} data-kind={kind} className="bg-slate-500" style={{ height: 3 }} />
-                )}
-                {kind === 'negative' && (
-                  <div data-testid={`bar-${name}-${d.label}`} data-kind={kind} className="bg-red-500 rounded-b"
-                    style={{ height: (-d.value / maxNeg) * bottomH }} />
-                )}
-              </div>
-              <span className={`mt-1 text-center text-xs tabular-nums ${d.value < 0 ? 'text-red-600 font-semibold' : 'text-slate-700'}`}>{fmt(d.value, unit)}</span>
-              <span className="text-center text-xs text-slate-400">{d.label}</span>
-            </li>
-          );
-        })}
-      </ul>
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset capitalize ${BADGES[tone] || BADGES.default}`}>
+      <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
+      {children}
+    </span>
+  );
+}
+
+export function Avatar({ name, dark = false }) {
+  return (
+    <span aria-hidden="true"
+      className={`grid place-items-center h-8 w-8 shrink-0 rounded-full text-xs font-semibold ${dark ? 'bg-accent-500 text-night' : 'bg-accent-50 text-accent-800'}`}>
+      {initials(name)}
+    </span>
+  );
+}
+
+export function Person({ name, sub }) {
+  return (
+    <span className="flex items-center gap-3">
+      <Avatar name={name} />
+      <span className="flex flex-col">
+        <span className="font-medium text-night">{name}</span>
+        {sub && <span className="text-xs text-slate-600">{sub}</span>}
+      </span>
+    </span>
+  );
+}
+
+export function Empty({ children = 'Sin datos', icon = 'box' }) {
+  return (
+    <div className="flex flex-col items-center gap-2 py-10 text-center">
+      <span className="grid place-items-center h-10 w-10 rounded-full bg-mist text-slate-400"><Icon name={icon} /></span>
+      <p className="text-sm text-slate-600">{children}</p>
     </div>
   );
 }
+
+export function ErrorNote({ children }) {
+  return <p role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">{children}</p>;
+}
+
+export { BarChart } from './BarChart.jsx';

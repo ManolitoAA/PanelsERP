@@ -149,3 +149,21 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 **Pruebas:** `pytest backend` con Gemini y Telegram falsos (sin llamadas reales) y `npm run test:e2e` en verde; prueba manual con el bot real.
 
 **Hecho cuando:** un audio o texto por Telegram crea el pedido correcto tras confirmar, y las pruebas pasan.
+
+---
+
+## Fase 9 · Rediseño visual del frontend
+
+**Objetivo:** una interfaz con personalidad que anime a usar el ERP: sistema visual propio, movimiento sutil y portada de login que enseña el producto.
+
+**Tareas:**
+- [x] Paleta y tipografía repartidas con `design-taste-frontend` (noche `#0a0d14` + azul `#5ab9fc`, Instrument Sans + DM Mono) en `tailwind.config.mjs` y `src/styles/global.css`.
+- [x] Capa de movimiento: entrada única al cargar, hover que eleva, botones que se hunden al pulsar; todo en reposo con `prefers-reduced-motion`.
+- [x] `ui.jsx` rehecho (tarjetas KPI, badges, avatares, campos con etiqueta, estados vacíos), `BarChart.jsx`, `icons.jsx` y `format.js` con pruebas `node --test`.
+- [x] Barra lateral oscura con iconos, saludo según la hora y menú móvil a pantalla completa.
+- [x] Login como portada: titular, dato del Caso 1 y maqueta del dashboard en HTML.
+- [x] Dashboard con KPI de margen, atajos y supervisión con margen y barra de cuota; pedido nuevo con resumen en vivo y aviso de venta bajo coste.
+
+**Pruebas:** `npm run test:unit` (5) y `npm run test:e2e` (19) en verde; `astro build` compila; capturas con `SHOTS=1 npm run test:e2e -- screenshots`.
+
+**Hecho cuando:** todo lo anterior pasa y las capturas a 1440 y 390 px se revisan a ojo.

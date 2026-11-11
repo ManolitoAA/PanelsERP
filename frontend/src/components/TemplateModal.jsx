@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 
 import { API_BASE, authHeaders } from './api.js';
+import { Button, Field, ErrorNote, inputClass } from './ui.jsx';
+import Icon from './icons.jsx';
 
 export default function TemplateModal({ template, onClose }) {
   const [context, setContext] = useState('{}');
@@ -53,50 +55,41 @@ export default function TemplateModal({ template, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg flex flex-col gap-4 p-6">
-        <div className="flex justify-between items-center">
-          <h2 className="font-bold text-lg text-slate-800">{template.name}</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-xl">&times;</button>
+    <div className="fixed inset-0 bg-night/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="tpl-modal-title">
+      <div className="enter bg-white rounded-2xl shadow-lift w-full max-w-lg max-h-[90vh] overflow-y-auto flex flex-col gap-4 p-6">
+        <div className="flex justify-between items-center gap-3">
+          <h2 id="tpl-modal-title" className="text-lg font-semibold tracking-display text-night">{template.name}</h2>
+          <button onClick={onClose} aria-label="Cerrar"
+            className="press grid place-items-center h-11 w-11 rounded-lg text-slate-600 hover:text-night hover:bg-mist">
+            <Icon name="close" className="h-4 w-4" />
+          </button>
         </div>
 
-        {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+        {error && <ErrorNote>{error}</ErrorNote>}
 
-        <label className="text-sm font-medium text-slate-700 flex flex-col gap-1">
-          Variables (JSON)
-          <textarea
-            rows={4}
-            value={context}
-            onChange={e => setContext(e.target.value)}
-            className="border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
-          />
-        </label>
+        <Field label="Variables (JSON)">
+          <textarea rows={4} value={context} onChange={e => setContext(e.target.value)} className={`${inputClass} py-2 font-mono`} />
+        </Field>
 
-        <button onClick={handleRender}
-          className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg py-2 transition-colors">
-          Previsualizar
-        </button>
+        <Button variant="secondary" onClick={handleRender}><Icon name="eye" className="h-4 w-4" />Previsualizar</Button>
 
         {preview && (
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm flex flex-col gap-1">
-            <p className="font-semibold text-slate-700">Asunto: {preview.rendered_subject}</p>
-            <pre className="whitespace-pre-wrap text-slate-600">{preview.rendered_body}</pre>
+          <div className="rounded-xl border border-accent-100 bg-accent-50/60 p-4 text-sm flex flex-col gap-2">
+            <p className="font-medium text-night">Asunto: {preview.rendered_subject}</p>
+            <pre className="whitespace-pre-wrap font-sans text-slate-700">{preview.rendered_body}</pre>
           </div>
         )}
 
-        <div className="flex gap-2 pt-2 border-t">
-          <button onClick={handleCopy}
-            className="flex-1 border border-slate-300 hover:bg-slate-50 text-sm font-medium rounded-lg py-2 transition-colors">
-            {copied ? '¡Copiado!' : 'Copiar al portapapeles'}
-          </button>
+        <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-night/5">
+          <Button variant="secondary" onClick={handleCopy} className="flex-1">
+            <Icon name={copied ? 'check' : 'copy'} className="h-4 w-4" />{copied ? '¡Copiado!' : 'Copiar al portapapeles'}
+          </Button>
           <div className="flex flex-1 gap-2">
-            <input type="email" placeholder="email@destino.de" value={toEmail}
-              onChange={e => setToEmail(e.target.value)}
-              className="flex-1 border rounded-lg px-2 py-2 text-sm" />
-            <button onClick={handleSend} disabled={sending || !toEmail}
-              className="bg-brand-600 text-white px-4 rounded-lg text-sm font-medium disabled:opacity-60">
-              {sending ? '…' : 'Enviar'}
-            </button>
+            <input type="email" aria-label="Email de destino" placeholder="email@destino.de" value={toEmail}
+              onChange={e => setToEmail(e.target.value)} className={`${inputClass} flex-1`} />
+            <Button onClick={handleSend} disabled={sending || !toEmail}>
+              <Icon name="send" className="h-4 w-4" />{sending ? '…' : 'Enviar'}
+            </Button>
           </div>
         </div>
       </div>

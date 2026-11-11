@@ -30,3 +30,5 @@ graphify-out/
 test-results/
 playwright-report/
 .playwright-mcp/
+.taste-skill/
+shots/

@@ -1,13 +1,19 @@
 ---
-const { title } = Astro.props;
+import '../styles/global.css';
+const { title, dark = false } = Astro.props;
 ---
 <html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="PanelsERP: clientes, pedidos con margen calculado y plantillas de mensajes para el equipo comercial." />
+    <meta name="theme-color" content="#0a0d14" />
     <title>PanelsERP – {title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   </head>
-  <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen">
+  <body class={`${dark ? 'bg-night text-mist' : 'bg-paper text-night'} font-sans antialiased min-h-screen`}>
     <slot />
   </body>
 </html>

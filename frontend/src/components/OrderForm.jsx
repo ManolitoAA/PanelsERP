@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { Button, Field, ErrorNote, inputClass } from './ui.jsx';
+import { marginPct } from './format.js';
+import Icon from './icons.jsx';
 
 function calcItem(item) {
   const qty = Number(item.quantity) || 0;
@@ -11,11 +14,11 @@ function calcItem(item) {
   };
 }
 
+const EMPTY_ITEM = { product_name: '', quantity: 1, unit_price: '', unit_cost: '' };
+
 export default function OrderForm({ clientId, onSuccess }) {
   const API_BASE = import.meta.env.PUBLIC_API_URL || 'http://localhost:8000';
-  const [items, setItems] = useState([
-    { product_name: '', quantity: 1, unit_price: '', unit_cost: '' },
-  ]);
+  const [items, setItems] = useState([{ ...EMPTY_ITEM }]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -24,7 +27,7 @@ export default function OrderForm({ clientId, onSuccess }) {
   }
 
   function addItem() {
-    setItems(prev => [...prev, { product_name: '', quantity: 1, unit_price: '', unit_cost: '' }]);
+    setItems(prev => [...prev, { ...EMPTY_ITEM }]);
   }
 
   async function handleSubmit(e) {
@@ -66,41 +69,71 @@ export default function OrderForm({ clientId, onSuccess }) {
     const c = calcItem(it);
     return { subtotal: acc.subtotal + Number(c.subtotal), profit: acc.profit + Number(c.profit) };
   }, { subtotal: 0, profit: 0 });
+  const loss = totals.profit < 0;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-      {items.map((it, idx) => (
-        <div key={idx} className="grid grid-cols-2 md:grid-cols-5 gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200 text-sm">
-          <input placeholder="Producto" required value={it.product_name}
-            onChange={e => updateItem(idx, 'product_name', e.target.value)}
-            className="col-span-2 md:col-span-2 border rounded px-2 py-1" />
-          <input type="number" placeholder="Cant." min="1" value={it.quantity}
-            onChange={e => updateItem(idx, 'quantity', e.target.value)}
-            className="border rounded px-2 py-1" />
-          <input type="number" placeholder="Precio €" step="0.01" min="0" value={it.unit_price}
-            onChange={e => updateItem(idx, 'unit_price', e.target.value)}
-            className="border rounded px-2 py-1" />
-          <input type="number" placeholder="Coste €" step="0.01" min="0" required value={it.unit_cost}
-            onChange={e => updateItem(idx, 'unit_cost', e.target.value)}
-            className="border rounded px-2 py-1" />
-          <input name="margin" readOnly tabIndex={-1} aria-label="Margen %" value={`${calcItem(it).margin} %`}
-            className="border rounded px-2 py-1 bg-slate-100 text-slate-600" />
-          <p className="col-span-2 md:col-span-5 text-xs text-slate-500">
-            Subtotal: <strong>{calcItem(it).subtotal} €</strong> · Beneficio: <strong className="text-emerald-700">{calcItem(it).profit} €</strong>
-          </p>
-        </div>
-      ))}
-      <button type="button" onClick={addItem} className="text-sm text-brand-600 hover:underline self-start">+ Añadir línea</button>
-      <div className="flex justify-between items-center border-t pt-3">
-        <p className="text-sm text-slate-600">
-          Total: <strong>{totals.subtotal.toFixed(2)} €</strong> · Beneficio: <strong className="text-emerald-700">{totals.profit.toFixed(2)} €</strong>
-        </p>
-        <button type="submit" disabled={submitting}
-          className="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-60 transition-colors">
-          {submitting ? 'Guardando…' : 'Crear pedido'}
+    <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[1fr_340px] items-start">
+      <div className="flex flex-col gap-3">
+        {error && <ErrorNote>{error}</ErrorNote>}
+        {items.map((it, idx) => {
+          const c = calcItem(it);
+          return (
+            <div key={idx} style={{ '--i': idx }}
+              className="enter grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-3 p-4 md:p-5 bg-white rounded-2xl border border-night/5 shadow-card">
+              <Field label={`Línea ${idx + 1} · Producto`} className="col-span-2 md:col-span-1">
+                <input placeholder="Producto" required value={it.product_name}
+                  onChange={e => updateItem(idx, 'product_name', e.target.value)} className={inputClass} />
+              </Field>
+              <Field label="Cantidad">
+                <input type="number" placeholder="Cant." min="1" value={it.quantity}
+                  onChange={e => updateItem(idx, 'quantity', e.target.value)} className={`${inputClass} font-mono`} />
+              </Field>
+              <Field label="Precio unidad">
+                <input type="number" placeholder="Precio €" step="0.01" min="0" value={it.unit_price}
+                  onChange={e => updateItem(idx, 'unit_price', e.target.value)} className={`${inputClass} font-mono`} />
+              </Field>
+              <Field label="Coste unidad">
+                <input type="number" placeholder="Coste €" step="0.01" min="0" required value={it.unit_cost}
+                  onChange={e => updateItem(idx, 'unit_cost', e.target.value)} className={`${inputClass} font-mono`} />
+              </Field>
+              <Field label="Margen">
+                <input name="margin" readOnly tabIndex={-1} aria-label="Margen %" value={`${c.margin} %`}
+                  className={`${inputClass} font-mono bg-accent-50 border-accent-100 text-accent-800`} />
+              </Field>
+              <p className="col-span-2 md:col-span-5 flex gap-4 text-xs text-slate-600 border-t border-night/5 pt-3">
+                <span>Subtotal <strong className="font-mono font-medium text-night">{c.subtotal} €</strong></span>
+                <span>Beneficio <strong className={`font-mono font-medium ${Number(c.profit) < 0 ? 'text-red-600' : 'text-emerald-700'}`}>{c.profit} €</strong></span>
+              </p>
+            </div>
+          );
+        })}
+        <button type="button" onClick={addItem}
+          className="press self-start inline-flex items-center gap-2 rounded-xl border border-dashed border-night/20 px-4 min-h-[44px] text-sm font-medium text-slate-600 hover:border-accent-500 hover:text-accent-700 hover:bg-white">
+          <Icon name="plus" className="h-4 w-4" />Añadir línea
         </button>
       </div>
+
+      <aside className="enter lg:sticky lg:top-8 rounded-2xl bg-night text-mist p-6 shadow-glow grid-glow" style={{ '--i': 2 }}>
+        <h2 className="text-sm text-night-400">Resumen del pedido</h2>
+        <dl className="mt-5 flex flex-col gap-4">
+          <div className="flex justify-between items-baseline">
+            <dt className="text-sm text-night-400">Total</dt>
+            <dd data-testid="order-total" className="font-mono text-2xl text-white tabular-nums">{totals.subtotal.toFixed(2)} €</dd>
+          </div>
+          <div className="flex justify-between items-baseline">
+            <dt className="text-sm text-night-400">Beneficio neto</dt>
+            <dd data-testid="order-profit" className={`font-mono text-2xl tabular-nums ${loss ? 'text-red-400' : 'text-emerald-400'}`}>{totals.profit.toFixed(2)} €</dd>
+          </div>
+          <div className="flex justify-between items-baseline border-t border-white/10 pt-4">
+            <dt className="text-sm text-night-400">Margen</dt>
+            <dd data-testid="order-margin" className="font-mono text-4xl text-accent-500 tabular-nums">{marginPct(totals.subtotal, totals.profit)}</dd>
+          </div>
+        </dl>
+        {loss && <p className="mt-4 text-xs text-red-300">Este pedido vende por debajo del coste.</p>}
+        <Button type="submit" disabled={submitting} className="mt-6 w-full min-h-[48px]">
+          {submitting ? 'Guardando…' : 'Crear pedido'}
+        </Button>
+      </aside>
     </form>
   );
 }

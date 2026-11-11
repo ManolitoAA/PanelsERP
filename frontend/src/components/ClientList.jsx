@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { API_BASE, authHeaders } from './api.js';
-import { Table, Empty, inputClass } from './ui.jsx';
+import { Table, Empty, ErrorNote, Badge, Person, inputClass, rowClass, cellClass, moneyClass } from './ui.jsx';
+import Icon from './icons.jsx';
 
 const COLUMNS = [
-  { label: 'Nombre' }, { label: 'Empresa' }, { label: 'Email' }, { label: 'Estado' },
+  { label: 'Nombre' }, { label: 'Email' }, { label: 'Estado' },
   { label: 'Facturado €', right: true }, { label: 'Beneficio €', right: true }, { label: '' },
 ];
 
@@ -30,26 +31,35 @@ export default function ClientList({ status = '' }) {
     setClients(cs => (status && status !== newStatus ? cs.filter(c => c.id !== id) : cs.map(c => (c.id === id ? { ...c, status: newStatus } : c))));
   }
 
-  if (loading) return <Empty>Cargando clientes…</Empty>;
-  if (error) return <p role="alert" className="text-red-600 text-sm">{error}</p>;
-  if (!clients.length) return <Empty>Sin clientes todavía.</Empty>;
+  if (loading) return <Empty icon="users">Cargando clientes…</Empty>;
+  if (error) return <ErrorNote>{error}</ErrorNote>;
+  if (!clients.length) return <Empty icon="users">Sin clientes todavía. Registra el primero arriba.</Empty>;
 
   return (
     <Table columns={COLUMNS}>
       {clients.map(c => (
-        <tr key={c.id} className="hover:bg-slate-50">
-          <td className="px-4 py-3 font-medium">{c.name}</td>
-          <td className="px-4 py-3 text-slate-600">{c.company}</td>
-          <td className="px-4 py-3 text-slate-500">{c.contact_email}</td>
-          <td className="px-4 py-3">
-            {readOnly ? <span className="capitalize">{c.status}</span> : <select aria-label={`Estado de ${c.name}`} value={c.status} onChange={e => changeStatus(c.id, e.target.value)} className={inputClass}>
-              <option value="lead">Lead</option>
-              <option value="cliente">Cliente</option>
-            </select>}
+        <tr key={c.id} className={rowClass}>
+          <td className={cellClass}><Person name={c.name} sub={c.company} /></td>
+          <td className={`${cellClass} text-slate-600`}>{c.contact_email}</td>
+          <td className={cellClass}>
+            {readOnly ? <Badge tone={c.status}>{c.status}</Badge> : (
+              <select aria-label={`Estado de ${c.name}`} value={c.status} onChange={e => changeStatus(c.id, e.target.value)}
+                className={`${inputClass} w-auto min-h-[36px] ${c.status === 'cliente' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-amber-50 border-amber-200 text-amber-800'}`}>
+                <option value="lead">Lead</option>
+                <option value="cliente">Cliente</option>
+              </select>
+            )}
           </td>
-          <td className="px-4 py-3 text-right tabular-nums">{c.total_billed.toFixed(2)}</td>
-          <td className="px-4 py-3 text-right tabular-nums text-emerald-700">{c.total_profit.toFixed(2)}</td>
-          <td className="px-4 py-3">{!readOnly && <a href={`/orders/new?client_id=${c.id}`} className="text-brand-600 hover:underline font-medium">Nuevo pedido</a>}</td>
+          <td className={moneyClass}>{c.total_billed.toFixed(2)}</td>
+          <td className={`${moneyClass} text-emerald-700`}>{c.total_profit.toFixed(2)}</td>
+          <td className={`${cellClass} text-right`}>
+            {!readOnly && (
+              <a href={`/orders/new?client_id=${c.id}`}
+                className="press inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 min-h-[36px] text-sm font-medium text-accent-700 hover:bg-accent-50">
+                Nuevo pedido<Icon name="arrow" className="h-3.5 w-3.5" />
+              </a>
+            )}
+          </td>
         </tr>
       ))}
     </Table>

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import AppShell from './AppShell.jsx';
 import { API_BASE, authHeaders } from './api.js';
-import { Card, Table, Button, Empty, inputClass } from './ui.jsx';
+import { Card, Table, Button, Field, Empty, ErrorNote, Person, inputClass, rowClass, cellClass } from './ui.jsx';
+import Icon from './icons.jsx';
 
 const COLUMNS = [{ label: 'Proveedor' }, { label: 'Contacto' }, { label: 'Notas' }];
 
@@ -24,29 +25,29 @@ export default function SuppliersPage() {
   }
 
   return (
-    <AppShell active="suppliers" title="Proveedores">
+    <AppShell active="suppliers" title="Proveedores" subtitle="Quién te sirve el material y cómo localizarle, a mano para el próximo pedido.">
       <div className="flex flex-col gap-6">
         <Card title="Nuevo proveedor">
-          <form onSubmit={submit} className="flex flex-wrap gap-2">
-            <input name="supplier-name" placeholder="Nombre" required value={form.name} onChange={set('name')} className={inputClass} />
-            <input name="supplier-contact" placeholder="Contacto (email / teléfono)" required value={form.contact_info} onChange={set('contact_info')} className={inputClass} />
-            <input name="supplier-notes" placeholder="Notas" value={form.notes} onChange={set('notes')} className={inputClass} />
-            <Button type="submit">Añadir proveedor</Button>
-            {error && <p role="alert" className="text-sm text-red-600 w-full">{error}</p>}
+          <form onSubmit={submit} className="grid gap-3 grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto] items-end">
+            <Field label="Nombre"><input name="supplier-name" placeholder="Nombre" required value={form.name} onChange={set('name')} className={inputClass} /></Field>
+            <Field label="Contacto"><input name="supplier-contact" placeholder="Email o teléfono" required value={form.contact_info} onChange={set('contact_info')} className={inputClass} /></Field>
+            <Field label="Notas"><input name="supplier-notes" placeholder="Material, plazos…" value={form.notes} onChange={set('notes')} className={inputClass} /></Field>
+            <Button type="submit"><Icon name="plus" className="h-4 w-4" />Añadir proveedor</Button>
+            {error && <div className="md:col-span-4"><ErrorNote>{error}</ErrorNote></div>}
           </form>
         </Card>
-        <Card>
+        <Card title="Directorio" style={{ '--i': 1 }}>
           {rows.length ? (
             <Table columns={COLUMNS}>
               {rows.map(s => (
-                <tr key={s.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 font-medium">{s.name}</td>
-                  <td className="px-4 py-3">{s.contact_info}</td>
-                  <td className="px-4 py-3 text-slate-500">{s.notes}</td>
+                <tr key={s.id} className={rowClass}>
+                  <td className={cellClass}><Person name={s.name} /></td>
+                  <td className={`${cellClass} text-slate-600`}>{s.contact_info}</td>
+                  <td className={`${cellClass} text-slate-600`}>{s.notes}</td>
                 </tr>
               ))}
             </Table>
-          ) : <Empty>Sin proveedores todavía.</Empty>}
+          ) : <Empty icon="truck">Sin proveedores todavía.</Empty>}
         </Card>
       </div>
     </AppShell>
