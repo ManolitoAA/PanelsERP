@@ -161,7 +161,7 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 - [x] Capa de movimiento: entrada única al cargar, hover que eleva, botones que se hunden al pulsar; todo en reposo con `prefers-reduced-motion`.
 - [x] `ui.jsx` rehecho (tarjetas KPI, badges, avatares, campos con etiqueta, estados vacíos), `BarChart.jsx`, `icons.jsx` y `format.js` con pruebas `node --test`.
 - [x] Barra lateral oscura con iconos, saludo según la hora y menú móvil a pantalla completa.
-- [x] Login como portada: titular, dato del Caso 1 y maqueta del dashboard en HTML.
+- [x] Login limpio: logo y formulario centrados, sin portada de marketing (es software interno).
 - [x] Favicon `public/favicon.svg` enlazado en el layout (sin 404 en consola).
 - [x] Dashboard con KPI de margen, atajos y supervisión con margen y barra de cuota; pedido nuevo con resumen en vivo y aviso de venta bajo coste.
 

@@ -5,7 +5,10 @@ import { test, expect } from '@playwright/test';
 test('login page renders with PanelsERP title and email/password fields', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveTitle(/PanelsERP/);
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('beneficio de cada pedido');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Inicia sesión');
+  await expect(page.getByRole('img', { name: 'PanelsERP' })).toBeVisible();
+  // login limpio: sin titulares de marketing ni maqueta del producto
+  await expect(page.getByText('beneficio de cada pedido')).toHaveCount(0);
   await expect(page.locator('input[name="email"]')).toBeVisible();
   await expect(page.locator('input[name="password"]')).toBeVisible();
   const submit = page.getByRole('button', { name: 'Iniciar sesión' });
