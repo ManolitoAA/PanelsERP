@@ -109,3 +109,19 @@ def test_negative_values_and_full_margin_are_asked_again():
     ])
     assert find_missing(draft, CLIENTS) == ["El precio y el coste de A no pueden ser negativos.",
                                             "El margen de B debe ser menor del 100 %."]
+
+
+def test_parse_order_sends_catalog_text():
+    fake = FakeGenai(OrderDraft())
+    parse_order(fake, "m", CLIENTS, text="x", catalog="7: BOLARDO PCK 100 × 430")
+    assert "7: BOLARDO PCK 100 × 430" in fake.calls[0]["contents"][0]
+
+
+def test_catalog_text_lists_variants(db_session):
+    from src.catalog_models import Product, ProductVariant
+    from src.services.catalog_service import catalog_text
+    assert catalog_text(db_session) == "ninguno"
+    db_session.add(Product(id=1, name="BOLARDO PCK", created_by=1))
+    db_session.add(ProductVariant(id=7, product_id=1, dimensions=["100", "430"], reference="BP-100", created_by=1))
+    db_session.commit()
+    assert catalog_text(db_session) == "7: BOLARDO PCK 100 × 430 ref BP-100"

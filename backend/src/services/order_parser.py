@@ -12,6 +12,7 @@ class DraftItem(BaseModel):
     unit_price: Optional[float] = None
     unit_cost: Optional[float] = None
     margin_pct: Optional[float] = None
+    variant_id: Optional[int] = Field(None, description="id de la variante del catálogo si encaja claramente; null si no")
 
 
 class NewClient(BaseModel):
@@ -37,6 +38,8 @@ Reglas:
 - Un mensaje puede ser solo para crear un cliente, sin productos: items vacío.
 - No inventes cantidades, precios, costes ni márgenes: si no se dicen, déjalos a null.
 - Precios y costes son unitarios en euros; un margen «del 40 %» es margin_pct=40.
+- Variantes del catálogo (usa solo estos ids): {catalog}
+- Si un producto encaja claramente con una variante, pon su variant_id y su nombre en product_name; si dudas entre varias, déjalo a null. Si eliges variante y no se dicen precio o coste, déjalos a null: se toman del catálogo.
 Borrador anterior (complétalo con el mensaje nuevo, sin perder lo que ya tenía): {previous}"""
 
 
@@ -45,10 +48,11 @@ def _clients_text(clients: List[Client]) -> str:
 
 
 def parse_order(genai_client, model: str, clients: List[Client], text: Optional[str] = None,
-                audio: Optional[bytes] = None, previous: Optional[OrderDraft] = None) -> OrderDraft:
+                audio: Optional[bytes] = None, previous: Optional[OrderDraft] = None,
+                catalog: str = "ninguno") -> OrderDraft:
     from google.genai import types
 
-    prompt = PROMPT.format(clients=_clients_text(clients), previous=previous.model_dump_json() if previous else "ninguno")
+    prompt = PROMPT.format(clients=_clients_text(clients), catalog=catalog, previous=previous.model_dump_json() if previous else "ninguno")
     contents: list = [prompt]
     if text:
         contents.append(f"Mensaje: {text}")

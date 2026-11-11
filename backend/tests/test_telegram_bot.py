@@ -171,3 +171,34 @@ def test_gemini_overloaded_message(make_bot):
     bot.genai.generate_content = overloaded
     bot.handle_update(text_msg("pedido"))
     assert bot.tg.sent()[0]["text"] == "Gemini está saturado. Prueba otra vez en un minuto."
+
+
+def test_bot_fills_price_and_cost_from_variant(make_bot, db_engine, db_session):
+    from src.catalog_models import Product, ProductVariant
+    db_session.add(Product(id=1, name="BOLARDO PCK", created_by=1))
+    db_session.add(ProductVariant(id=7, product_id=1, dimensions=["100", "430"], unit_price=15, unit_cost=9, created_by=1))
+    db_session.commit()
+    draft = OrderDraft(client_id=10, items=[DraftItem(product_name="Bolardo PCK 100×430", quantity=20, variant_id=7)])
+    bot = make_bot(draft)
+    bot.handle_update(text_msg("20 bolardos pck de 100 por 430 para Hans"))
+    assert "7: BOLARDO PCK 100 × 430" in bot.genai.calls[0]["contents"][0]
+    msg = bot.tg.sent()[0]["text"]
+    assert "a 15.00 € (coste 9.00 €)" in msg
+    bot.handle_update(button("ok"))
+    from sqlmodel import Session, select
+    from src.models import OrderItem
+    with Session(db_engine) as s:
+        assert s.exec(select(OrderItem)).one().variant_id == 7
+
+
+def test_bot_ignores_invented_variant_and_still_fills_valid_one(make_bot, db_session):
+    from src.catalog_models import Product, ProductVariant
+    db_session.add(Product(id=1, name="BOLARDO PCK", created_by=1))
+    db_session.add(ProductVariant(id=7, product_id=1, dimensions=["100", "430"], unit_price=15, unit_cost=9, created_by=1))
+    db_session.commit()
+    draft = OrderDraft(client_id=10, items=[DraftItem(product_name="Inventado", quantity=1, variant_id=99, unit_price=5, unit_cost=1),
+                                            DraftItem(product_name="Bolardo", quantity=2, variant_id=7)])
+    bot = make_bot(draft)
+    bot.handle_update(text_msg("pedido"))
+    items = bot.pending[1].items
+    assert items[0].variant_id is None and items[1].unit_cost == 9

@@ -147,3 +147,11 @@ def fill_from_variant(session: Session, item: T) -> T:
         raise OrderError(404, "Variant not found")
     return item.model_copy(update={k: getattr(variant, k) for k in ("unit_price", "unit_cost")
                                    if getattr(item, k) is None})
+
+
+def catalog_text(session: Session) -> str:
+    """Variantes del catálogo en una línea cada una, para el prompt del bot."""
+    _, existing = _existing(session)
+    lines = [f"{v.id}: {name} {' × '.join(v.dimensions)}" + (f" ref {v.reference}" if v.reference else "")
+             for name, v in existing]
+    return "\n".join(lines) or "ninguno"

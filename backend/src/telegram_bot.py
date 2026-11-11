@@ -12,6 +12,7 @@ from sqlmodel import Session, select
 from src.models import User
 from src.services.order_parser import OrderDraft, find_missing, make_genai_client, parse_order, summary, to_items
 from src.services.order_service import OrderError, clients_for, create_client, create_order
+from src.services.catalog_service import catalog_text, fill_from_variant
 
 log = logging.getLogger("telegram_bot")
 
@@ -84,18 +85,26 @@ class OrderBot:
             try:
                 audio = self.tg.download(file_id) if file_id else None
                 draft = parse_order(self.genai, self.model, clients, text=text, audio=audio,
-                                    previous=self.pending.get(chat_id))
+                                    previous=self.pending.get(chat_id), catalog=catalog_text(session))
             except genai_errors.ServerError:
                 log.exception("Gemini no disponible")
                 return self.send(chat_id, "Gemini está saturado. Prueba otra vez en un minuto.")
             except Exception:
                 log.exception("Fallo al interpretar el mensaje")
                 return self.send(chat_id, "No he podido entender el mensaje. Prueba otra vez.")
+            draft.items = [self._fill(session, it) for it in draft.items]
             self.pending[chat_id] = draft
             missing = find_missing(draft, clients)
             if missing:
                 return self.send(chat_id, "\n".join(missing) + "\nRespóndeme con lo que falta o /cancelar.")
             self.send(chat_id, summary(draft, clients), KEYBOARD)
+
+    @staticmethod
+    def _fill(session, item):
+        try:
+            return fill_from_variant(session, item)
+        except OrderError:  # Gemini inventó un variant_id: se trata como producto libre
+            return item.model_copy(update={"variant_id": None})
 
     def _on_button(self, query: dict):
         self.tg.call("answerCallbackQuery", callback_query_id=query["id"])
