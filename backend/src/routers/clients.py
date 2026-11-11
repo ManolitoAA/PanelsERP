@@ -5,6 +5,7 @@ from sqlmodel import Session, select
 from src.auth import get_current_user, require_roles
 from src.db import get_session
 from src.models import Client, RoleEnum, User
+from src.services.order_service import create_client as create_client_service
 
 router = APIRouter(prefix="/api/clients", tags=["clients"])
 
@@ -42,23 +43,8 @@ def create_client(
     current_user: User = Depends(require_roles([RoleEnum.COMERCIAL, RoleEnum.JEFE])),
     session: Session = Depends(get_session)
 ):
-    commercial_id = current_user.id
-    if current_user.role == RoleEnum.JEFE and payload.commercial_id is not None:
-        commercial_id = payload.commercial_id
-
-    client = Client(
-        name=payload.name,
-        company=payload.company,
-        contact_email=payload.contact_email,
-        commercial_id=commercial_id,
-        status=payload.status,
-        total_billed=0.0,
-        total_profit=0.0,
-    )
-    session.add(client)
-    session.commit()
-    session.refresh(client)
-    return client
+    return create_client_service(session, current_user, payload.name, payload.company,
+                                 payload.contact_email, payload.status, payload.commercial_id)
 
 @router.get("/{client_id}", response_model=Client)
 def get_client(

@@ -2,6 +2,7 @@ pyproject.toml
 src/__init__.py
 src/auth.py
 src/db.py
+src/demo_data.py
 src/main.py
 src/models.py
 src/seed.py
@@ -22,6 +23,7 @@ src/services/stats.py
 tests/test_auth.py
 tests/test_clients.py
 tests/test_conftest.py
+tests/test_demo_data.py
 tests/test_health.py
 tests/test_models.py
 tests/test_orders.py

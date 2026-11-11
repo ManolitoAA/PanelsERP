@@ -69,6 +69,16 @@ Añade 7 clientes y leads de dos comerciales, 24 pedidos repartidos en 6 meses (
 
 `comercial1@panelserp.com`, `comercial2@panelserp.com`, `jefe@panelserp.com` y `admin@panelserp.com`, todos con la contraseña `password123`. Son solo para desarrollo: no los uses en producción.
 
+### Bot de Telegram (pedidos y clientes con IA)
+
+Rellena `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ALLOWED_USER_ID`, `TELEGRAM_ERP_USER_EMAIL`, `GEMINI_API_KEY` y `GEMINI_MODEL` en `.env` (ver `.env.example`) y arráncalo:
+
+```bash
+cd backend && set -a && . ../.env && set +a && ../.venv/bin/python -m src.telegram_bot
+```
+
+Mándale un texto o un audio («Apúntame 200 perfiles a 15 €, coste 9, para Hans de Bauhaus» o «Crea el cliente Ana Kowalska, de Budmax, ana@budmax.pl»). Pregunta lo que falte y no guarda nada hasta que pulsas Confirmar. Solo atiende al ID de Telegram autorizado.
+
 ## Sin migraciones: si cambia el modelo
 
 El proyecto no usa migraciones. `create_all` crea tablas nuevas pero no añade columnas a las existentes. Si actualizas el código y la API devuelve 500 por una columna que falta (por ejemplo `status` en clientes), recrea la base de datos de desarrollo:

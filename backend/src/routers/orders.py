@@ -1,11 +1,12 @@
-from typing import List, Optional
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlmodel import Session, select
 from src.auth import get_current_user, require_roles
 from src.db import get_session
-from src.models import Client, Order, OrderItem, RoleEnum, User
-from src.services.profit_calculator import ItemCalculationInput, compute_item_financials
+from src.models import Order, RoleEnum, User
+from src.services.order_service import OrderError, create_order as create_order_service
+from src.services.profit_calculator import ItemCalculationInput
 
 router = APIRouter(tags=["orders"])
 
@@ -35,65 +36,10 @@ def create_order(
     current_user: User = Depends(require_roles([RoleEnum.COMERCIAL, RoleEnum.JEFE])),
     session: Session = Depends(get_session)
 ):
-    client = session.get(Client, payload.client_id)
-    if not client:
-        raise HTTPException(status_code=404, detail="Client not found")
-
-    if current_user.role == RoleEnum.COMERCIAL and client.commercial_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Forbidden for this client")
-
-    if not payload.items:
-        raise HTTPException(status_code=400, detail="Order must have at least one item")
-
-    computed_items = [compute_item_financials(it) for it in payload.items]
-    order_billed = round(sum(it.subtotal for it in computed_items), 2)
-    order_profit = round(sum(it.net_profit for it in computed_items), 2)
-
-    order = Order(
-        client_id=client.id,
-        commercial_id=client.commercial_id,
-        status="completado",
-        total_billed=order_billed,
-        net_profit=order_profit,
-    )
-    session.add(order)
-    session.commit()
-    session.refresh(order)
-
-    item_dicts = []
-    for it in computed_items:
-        db_item = OrderItem(
-            order_id=order.id,
-            product_name=it.product_name,
-            quantity=it.quantity,
-            unit_price=it.unit_price,
-            unit_cost=it.unit_cost,
-        )
-        session.add(db_item)
-        item_dicts.append({
-            "product_name": it.product_name,
-            "quantity": it.quantity,
-            "unit_price": it.unit_price,
-            "unit_cost": it.unit_cost,
-            "subtotal": it.subtotal,
-            "net_profit": it.net_profit,
-        })
-
-    # Update client totals
-    client.total_billed = round(client.total_billed + order_billed, 2)
-    client.total_profit = round(client.total_profit + order_profit, 2)
-    session.add(client)
-    session.commit()
-
-    return OrderResponse(
-        id=order.id,
-        client_id=order.client_id,
-        commercial_id=order.commercial_id,
-        status=order.status,
-        total_billed=order.total_billed,
-        net_profit=order.net_profit,
-        items=item_dicts,
-    )
+    try:
+        return OrderResponse(**create_order_service(session, current_user, payload.client_id, payload.items))
+    except OrderError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
 
 @router.get("/api/orders", response_model=List[OrderResponse])
 def list_orders(

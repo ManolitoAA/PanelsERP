@@ -132,3 +132,20 @@ El agente trabaja una fase cada vez y marca las casillas al cerrarla.
 **Pruebas:** `pytest backend` (28 + 1 Postgres opcional) y `npm run test:e2e` (16) en verde.
 
 **Hecho cuando:** todo lo anterior pasa y `astro build` compila.
+
+---
+
+## Fase 8 · Pedidos por Telegram con IA (Gemini)
+
+**Objetivo:** mandar al bot de Telegram un texto o un audio («apúntame este pedido para el cliente X») y que la IA lo convierta en un pedido, con resumen y confirmación antes de guardarlo.
+
+**Tareas:**
+- [x] Dependencias `google-genai` y `httpx`; variables `TELEGRAM_*` y `GEMINI_*` en `.env.example`.
+- [x] `services/order_service.py`: creación de pedidos compartida entre la API y el bot.
+- [x] `services/order_parser.py`: Gemini extrae cliente y líneas (texto o audio) en salida estructurada; `find_missing()` detecta datos que faltan o clientes ambiguos.
+- [x] Alta de clientes desde el bot (solos o junto a un pedido), con aviso de duplicados; `create_client()` compartido con la API.
+- [x] `src/telegram_bot.py`: polling, solo atiende a `TELEGRAM_ALLOWED_USER_ID`, pregunta lo que falta, resumen con botones Confirmar / Cancelar.
+
+**Pruebas:** `pytest backend` con Gemini y Telegram falsos (sin llamadas reales) y `npm run test:e2e` en verde; prueba manual con el bot real.
+
+**Hecho cuando:** un audio o texto por Telegram crea el pedido correcto tras confirmar, y las pruebas pasan.

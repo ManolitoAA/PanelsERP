@@ -1,0 +1,87 @@
+"""Creación de pedidos compartida entre la API web y el bot de Telegram."""
+from typing import List, Optional
+from sqlmodel import Session, select
+from src.models import Client, Order, OrderItem, RoleEnum, User
+from src.services.profit_calculator import ItemCalculationInput, compute_item_financials
+
+
+class OrderError(Exception):
+    def __init__(self, status_code: int, detail: str):
+        super().__init__(detail)
+        self.status_code = status_code
+        self.detail = detail
+
+
+def clients_for(session: Session, user: User) -> List[Client]:
+    """Clientes que el usuario puede usar en un pedido (un comercial, solo los suyos)."""
+    statement = select(Client)
+    if user.role == RoleEnum.COMERCIAL:
+        statement = statement.where(Client.commercial_id == user.id)
+    return list(session.exec(statement).all())
+
+
+def create_client(session: Session, user: User, name: str, company: str, contact_email: str,
+                  status: str = "lead", commercial_id: Optional[int] = None) -> Client:
+    if user.role not in (RoleEnum.COMERCIAL, RoleEnum.JEFE):
+        raise OrderError(403, "Not enough permissions")
+    owner = commercial_id if user.role == RoleEnum.JEFE and commercial_id is not None else user.id
+    client = Client(name=name, company=company, contact_email=contact_email,
+                    commercial_id=owner, status=status, total_billed=0.0, total_profit=0.0)
+    session.add(client)
+    session.commit()
+    session.refresh(client)
+    return client
+
+
+def create_order(session: Session, user: User, client_id: int, items: List[ItemCalculationInput]) -> dict:
+    if user.role not in (RoleEnum.COMERCIAL, RoleEnum.JEFE):
+        raise OrderError(403, "Not enough permissions")
+
+    client = session.get(Client, client_id)
+    if not client:
+        raise OrderError(404, "Client not found")
+    if user.role == RoleEnum.COMERCIAL and client.commercial_id != user.id:
+        raise OrderError(403, "Forbidden for this client")
+    if not items:
+        raise OrderError(400, "Order must have at least one item")
+
+    computed_items = [compute_item_financials(it) for it in items]
+    order_billed = round(sum(it.subtotal for it in computed_items), 2)
+    order_profit = round(sum(it.net_profit for it in computed_items), 2)
+
+    order = Order(
+        client_id=client.id,
+        commercial_id=client.commercial_id,
+        status="completado",
+        total_billed=order_billed,
+        net_profit=order_profit,
+    )
+    session.add(order)
+    session.commit()
+    session.refresh(order)
+
+    item_dicts = []
+    for it in computed_items:
+        session.add(OrderItem(
+            order_id=order.id,
+            product_name=it.product_name,
+            quantity=it.quantity,
+            unit_price=it.unit_price,
+            unit_cost=it.unit_cost,
+        ))
+        item_dicts.append(it.model_dump())
+
+    client.total_billed = round(client.total_billed + order_billed, 2)
+    client.total_profit = round(client.total_profit + order_profit, 2)
+    session.add(client)
+    session.commit()
+
+    return {
+        "id": order.id,
+        "client_id": order.client_id,
+        "commercial_id": order.commercial_id,
+        "status": order.status,
+        "total_billed": order.total_billed,
+        "net_profit": order.net_profit,
+        "items": item_dicts,
+    }
