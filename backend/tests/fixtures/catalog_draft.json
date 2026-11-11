@@ -1,0 +1,18 @@
+{
+  "products": [
+    {
+      "name": "BOLARDO PCK",
+      "subtitle": "Bollard · Protección de puertas, esquinas y zonas de reducido tamaño",
+      "family": "PCK",
+      "description": "La mejor opción para proteger la parte interior de puertas y esquinas.",
+      "section_title": "DIMENSIONES (MM), PERFORACIÓN Y RESISTENCIA AL IMPACTO",
+      "note": "Impacto a 90º, ensayo verificado por TÜV Nord.",
+      "table_headers": ["Ø Diámetro", "Altura (mm)", "Ø Varilla", "Perforación Ø", "Profundidad", "Resistencia a Impacto (J)"],
+      "variants": [
+        {"reference": null, "dimensions": ["70", "266", "20", "48", "150", "--"], "usage": "transpaleta"},
+        {"reference": null, "dimensions": ["100", "430", "30", "68", "150", "12.800"], "usage": "carretilla"}
+      ]
+    }
+  ],
+  "failed_pages": []
+}
