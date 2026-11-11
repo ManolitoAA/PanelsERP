@@ -81,3 +81,13 @@ def test_failed_save_leaves_no_half_order(db_engine, users):
     with Session(db_engine) as s:
         assert s.exec(select(Order)).all() == []
         assert s.get(Client, 10).total_billed == 0.0
+
+
+def test_create_order_keeps_given_date(db_session, users):
+    from datetime import datetime, timezone
+    from src.models import Order
+    com_a, _, _ = users
+    when = datetime(2026, 1, 5, 10, tzinfo=timezone.utc)
+    order = create_order(db_session, com_a, 10, [ItemCalculationInput(product_name="P", unit_price=2, unit_cost=1)],
+                         created_at=when)
+    assert db_session.get(Order, order["id"]).created_at.replace(tzinfo=timezone.utc) == when  # SQLite no guarda la zona

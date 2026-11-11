@@ -1,4 +1,5 @@
 """Creación de pedidos compartida entre la API web y el bot de Telegram."""
+from datetime import datetime
 from typing import List, Optional
 from sqlmodel import Session, select
 from src.models import Client, Order, OrderItem, RoleEnum, User
@@ -20,11 +21,20 @@ def clients_for(session: Session, user: User) -> List[Client]:
     return list(session.exec(statement).all())
 
 
+def check_owner(session: Session, commercial_id: int) -> None:
+    """Un cliente solo puede pertenecer a un comercial o al jefe, y debe existir."""
+    owner = session.get(User, commercial_id)
+    if not owner or owner.role not in (RoleEnum.COMERCIAL, RoleEnum.JEFE):
+        raise OrderError(400, f"commercial_id {commercial_id} no es un comercial ni el jefe")
+
+
 def create_client(session: Session, user: User, name: str, company: str, contact_email: str,
                   status: str = "lead", commercial_id: Optional[int] = None) -> Client:
     if user.role not in (RoleEnum.COMERCIAL, RoleEnum.JEFE):
         raise OrderError(403, "Not enough permissions")
     owner = commercial_id if user.role == RoleEnum.JEFE and commercial_id is not None else user.id
+    if owner != user.id:
+        check_owner(session, owner)
     client = Client(name=name, company=company, contact_email=contact_email,
                     commercial_id=owner, status=status, total_billed=0.0, total_profit=0.0)
     session.add(client)
@@ -33,7 +43,8 @@ def create_client(session: Session, user: User, name: str, company: str, contact
     return client
 
 
-def create_order(session: Session, user: User, client_id: int, items: List[ItemCalculationInput]) -> dict:
+def create_order(session: Session, user: User, client_id: int, items: List[ItemCalculationInput],
+                 created_at: Optional[datetime] = None) -> dict:
     if user.role not in (RoleEnum.COMERCIAL, RoleEnum.JEFE):
         raise OrderError(403, "Not enough permissions")
 
@@ -57,6 +68,8 @@ def create_order(session: Session, user: User, client_id: int, items: List[ItemC
         total_billed=order_billed,
         net_profit=order_profit,
     )
+    if created_at:
+        order.created_at = created_at
     session.add(order)
     session.flush()  # solo para tener order.id: pedido, líneas y totales van en un único commit
 

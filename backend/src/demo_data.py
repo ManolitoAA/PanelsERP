@@ -2,8 +2,9 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from sqlmodel import Session, select
-from src.models import Client, Order, OrderItem, Supplier, Template, User
-from src.services.profit_calculator import ItemCalculationInput, compute_item_financials
+from src.models import Client, Supplier, Template, User
+from src.services.order_service import create_client, create_order
+from src.services.profit_calculator import ItemCalculationInput
 
 # (producto, cantidad, precio, coste)
 PERFIL = ("Perfil polietileno 2m", 200, 15.0, 9.0)
@@ -52,21 +53,11 @@ def seed_demo(session: Session, today: Optional[datetime] = None) -> None:
     users = {u.email: u for u in session.exec(select(User)).all()}
 
     for email, name, company, contact, status, orders in CLIENTS:
-        client = Client(name=name, company=company, contact_email=contact, status=status, commercial_id=users[email].id)
-        session.add(client)
-        session.flush()
+        user = users[email]
+        client = create_client(session, user, name, company, contact, status=status)
         for days_ago, lines in orders:
-            items = [compute_item_financials(ItemCalculationInput(product_name=p, quantity=q, unit_price=pr, unit_cost=c)) for p, q, pr, c in lines]
-            billed = round(sum(i.subtotal for i in items), 2)
-            profit = round(sum(i.net_profit for i in items), 2)
-            order = Order(client_id=client.id, commercial_id=client.commercial_id, total_billed=billed, net_profit=profit,
-                          created_at=today - timedelta(days=days_ago))
-            session.add(order)
-            session.flush()
-            session.add_all([OrderItem(order_id=order.id, product_name=i.product_name, quantity=i.quantity,
-                                       unit_price=i.unit_price, unit_cost=i.unit_cost) for i in items])
-            client.total_billed = round(client.total_billed + billed, 2)
-            client.total_profit = round(client.total_profit + profit, 2)
+            items = [ItemCalculationInput(product_name=p, quantity=q, unit_price=pr, unit_cost=c) for p, q, pr, c in lines]
+            create_order(session, user, client.id, items, created_at=today - timedelta(days=days_ago))
 
     session.add_all([Supplier(name=n, contact_info=c, notes=notes) for n, c, notes in SUPPLIERS])
     session.add_all([Template(name=n, subject=s, body_content=b) for n, s, b in TEMPLATES])

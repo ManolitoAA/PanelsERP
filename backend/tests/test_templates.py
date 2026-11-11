@@ -69,7 +69,8 @@ def test_render_template_with_variables(tpl_client):
     assert res.json()["rendered_body"] == "Hola Hans, su pedido asciende a 3000.0 EUR."
 
 @patch("src.services.mailer.send_smtp_email")
-def test_send_email_mock(mock_send, tpl_client):
+def test_send_email_mock(mock_send, tpl_client, monkeypatch):
+    monkeypatch.setenv("SMTP_HOST", "smtp.example.com")
     tc, headers = tpl_client
     tpl = tc.post("/api/templates", json={
         "name": "Notificacion",
@@ -97,3 +98,13 @@ def test_template_sandbox_blocks_attribute_escape(tpl_client):
 def test_template_runtime_error_is_422_not_500(tpl_client):
     tc, headers = tpl_client
     assert _render(tc, headers, "{{ 1/0 }}").status_code == 422
+
+
+@patch("src.services.mailer.send_smtp_email")
+def test_send_without_smtp_config_is_503_not_fake_success(mock_send, tpl_client, monkeypatch):
+    monkeypatch.delenv("SMTP_HOST", raising=False)
+    tc, headers = tpl_client
+    t = tc.post("/api/templates", json={"name": "T", "subject": "S", "body_content": "B"}, headers=headers).json()
+    res = tc.post(f"/api/templates/{t['id']}/send", json={"to_email": "c@e.de", "context": {}}, headers=headers)
+    assert res.status_code == 503
+    mock_send.assert_not_called()

@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 from src.auth import get_current_user, require_roles
 from src.db import get_session
 from src.models import Client, RoleEnum, User
-from src.services.order_service import create_client as create_client_service
+from src.services.order_service import OrderError, check_owner, create_client as create_client_service
 
 router = APIRouter(prefix="/api/clients", tags=["clients"])
 
@@ -43,8 +43,11 @@ def create_client(
     current_user: User = Depends(require_roles([RoleEnum.COMERCIAL, RoleEnum.JEFE])),
     session: Session = Depends(get_session)
 ):
-    return create_client_service(session, current_user, payload.name, payload.company,
-                                 payload.contact_email, payload.status, payload.commercial_id)
+    try:
+        return create_client_service(session, current_user, payload.name, payload.company,
+                                     payload.contact_email, payload.status, payload.commercial_id)
+    except OrderError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
 
 @router.get("/{client_id}", response_model=Client)
 def get_client(
@@ -78,6 +81,11 @@ def update_client(
     client_data = payload.model_dump(exclude_unset=True)
     if current_user.role == RoleEnum.COMERCIAL and "commercial_id" in client_data:
         del client_data["commercial_id"]
+    if client_data.get("commercial_id") is not None:
+        try:
+            check_owner(session, client_data["commercial_id"])
+        except OrderError as e:
+            raise HTTPException(status_code=e.status_code, detail=e.detail)
 
     for key, value in client_data.items():
         setattr(client, key, value)

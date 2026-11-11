@@ -1,3 +1,4 @@
+import os
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from jinja2 import BaseLoader, TemplateError
@@ -89,6 +90,8 @@ def send_template_email(
         raise HTTPException(status_code=404, detail="Template not found")
 
     rendered_subject, rendered_body = _render_template(tpl, payload.context)
+    if not os.getenv("SMTP_HOST"):
+        raise HTTPException(status_code=503, detail="El envío por email no está configurado (falta SMTP_HOST en .env)")
 
     background_tasks.add_task(mailer.send_smtp_email, payload.to_email, rendered_subject, rendered_body)
     return {"status": "enqueued", "to": payload.to_email}

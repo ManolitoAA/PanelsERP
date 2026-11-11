@@ -117,3 +117,20 @@ def test_update_with_invalid_status_rejected(client_env):
     tc, h = client_env["client"], client_env["c1_headers"]
     cid = _new(tc, h).json()["id"]
     assert tc.put(f"/api/clients/{cid}", json={"status": "foo"}, headers=h).status_code == 422
+
+
+@pytest.mark.parametrize("owner", [999, 4])  # no existe, RRHH
+def test_jefe_cannot_assign_client_to_non_commercial(client_env, owner):
+    tc, jefe = client_env["client"], client_env["jefe_headers"]
+    body = {"name": "Ana", "company": "Budmax", "contact_email": "a@b.pl", "commercial_id": owner}
+    assert tc.post("/api/clients", json=body, headers=jefe).status_code == 400
+    cid = tc.post("/api/clients", json={**body, "commercial_id": 2}, headers=jefe).json()["id"]
+    assert tc.put(f"/api/clients/{cid}", json={"commercial_id": owner}, headers=jefe).status_code == 400
+    assert tc.get(f"/api/clients/{cid}", headers=jefe).json()["commercial_id"] == 2
+
+def test_jefe_assigns_client_to_commercial(client_env):
+    tc, jefe = client_env["client"], client_env["jefe_headers"]
+    body = {"name": "Ana", "company": "Budmax", "contact_email": "a@b.pl", "commercial_id": 2}
+    res = tc.post("/api/clients", json=body, headers=jefe)
+    assert res.status_code == 201 and res.json()["commercial_id"] == 2
+    assert tc.put(f"/api/clients/{res.json()['id']}", json={"commercial_id": 1}, headers=jefe).json()["commercial_id"] == 1
