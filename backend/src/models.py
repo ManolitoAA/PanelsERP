@@ -41,6 +41,7 @@ class OrderItem(SQLModel, table=True):
     quantity: int = Field(default=1)
     unit_price: float = Field(default=0.0)
     unit_cost: float = Field(default=0.0)
+    variant_id: Optional[int] = Field(default=None, index=True)
 
     @property
     def subtotal(self) -> float:
@@ -61,3 +62,6 @@ class Template(SQLModel, table=True):
     name: str
     subject: str
     body_content: str
+
+# registra las tablas del catálogo en el mismo metadata para que create_all las cree siempre
+from src.catalog_models import Product, ProductVariant  # noqa: E402,F401
