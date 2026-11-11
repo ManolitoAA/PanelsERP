@@ -1,0 +1,7 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CatalogPage from '../components/CatalogPage.jsx';
+---
+<Layout title="Catálogo">
+  <CatalogPage client:only="react" />
+</Layout>
