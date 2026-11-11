@@ -1,7 +1,8 @@
 """Catálogo compartido: detección de duplicados, permisos de conflicto y guardado de importaciones."""
 import re
 import unicodedata
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, TypeVar
+from pydantic import BaseModel
 from sqlmodel import Session, select
 from src.catalog_models import Product, ProductVariant
 from src.models import RoleEnum, User
@@ -132,3 +133,17 @@ def apply_import(session: Session, user: User, preview: ImportPreview) -> Dict[s
         session.rollback()
         raise
     return counts
+
+
+T = TypeVar("T", bound=BaseModel)
+
+
+def fill_from_variant(session: Session, item: T) -> T:
+    """Completa precio y coste vacíos con los de la variante; lo que el usuario escribió manda."""
+    if item.variant_id is None:
+        return item
+    variant = session.get(ProductVariant, item.variant_id)
+    if not variant:
+        raise OrderError(404, "Variant not found")
+    return item.model_copy(update={k: getattr(variant, k) for k in ("unit_price", "unit_cost")
+                                   if getattr(item, k) is None})

@@ -5,8 +5,9 @@ class ItemCalculationInput(BaseModel):
     product_name: str
     quantity: int = Field(1, gt=0)
     unit_price: Optional[float] = Field(None, ge=0)
-    unit_cost: float = Field(ge=0)
+    unit_cost: Optional[float] = Field(None, ge=0)  # puede venir de la variante; create_order exige que acabe teniendo valor
     margin_pct: Optional[float] = Field(None, lt=100)  # margen sobre el precio de venta, no sobre el coste
+    variant_id: Optional[int] = None
 
 class ItemCalculationOutput(BaseModel):
     product_name: str

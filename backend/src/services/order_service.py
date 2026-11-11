@@ -57,6 +57,11 @@ def create_order(session: Session, user: User, client_id: int, items: List[ItemC
     if not items:
         raise OrderError(400, "Order must have at least one item")
 
+    from src.services.catalog_service import fill_from_variant  # import local: catalog_service importa OrderError de aquí
+    items = [fill_from_variant(session, it) for it in items]
+    for it in items:
+        if it.unit_cost is None:
+            raise OrderError(422, f"Falta el coste de {it.product_name}")
     computed_items = [compute_item_financials(it) for it in items]
     order_billed = round(sum(it.subtotal for it in computed_items), 2)
     order_profit = round(sum(it.net_profit for it in computed_items), 2)
@@ -74,13 +79,14 @@ def create_order(session: Session, user: User, client_id: int, items: List[ItemC
     session.flush()  # solo para tener order.id: pedido, líneas y totales van en un único commit
 
     item_dicts = []
-    for it in computed_items:
+    for it, src_item in zip(computed_items, items):
         session.add(OrderItem(
             order_id=order.id,
             product_name=it.product_name,
             quantity=it.quantity,
             unit_price=it.unit_price,
             unit_cost=it.unit_cost,
+            variant_id=src_item.variant_id,
         ))
         item_dicts.append(it.model_dump())
 
