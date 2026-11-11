@@ -78,3 +78,9 @@ def test_fill_from_variant_without_id_returns_same(env):
         assert fill_from_variant(s, item) == item
         with pytest.raises(OrderError):
             fill_from_variant(s, ItemCalculationInput(product_name="x", variant_id=999))
+
+
+def test_order_margin_wins_over_catalog_price(env):
+    tc, h, _ = env
+    r = post_order(tc, h, variant_id=7, margin_pct=50)
+    assert r.status_code == 201 and r.json()["total_billed"] == 3600.0  # 9 / (1 - 0.5) = 18 €

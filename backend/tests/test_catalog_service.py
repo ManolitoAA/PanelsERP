@@ -37,6 +37,8 @@ def variants(session):
 
 def test_normalize_ignores_thousands_accents_and_diameter():
     assert normalize(" Ø 1.500 ") == normalize("1500")
+    assert normalize("1.500mm") == normalize("1500 mm")
+    assert normalize("⌀ 100") == normalize("Ø100")
     assert normalize("GUARDARRAÍL PCK") == normalize("guardarrail  pck")
 
 

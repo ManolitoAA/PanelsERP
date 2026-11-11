@@ -19,7 +19,7 @@ test('variantOptions da una opción por variante', () => {
 test('pickVariant rellena precio y coste vacíos y guarda variant_id', () => {
   const line = { product_name: 'BOLARDO PCK 100 × 430', quantity: 2, unit_price: '', unit_cost: '' };
   assert.deepEqual(pickVariant(line, variantOptions(PRODUCTS)),
-    { ...line, variant_id: 7, unit_price: '15', unit_cost: '9' });
+    { ...line, variant_id: 7, unit_price: '15', unit_cost: '9', auto: { unit_price: '15', unit_cost: '9' } });
 });
 
 test('pickVariant respeta lo escrito a mano', () => {
@@ -53,4 +53,25 @@ test('canEdit: autor o jefe, nunca rrhh', () => {
   assert.equal(canEdit({ id: 2, role: 'comercial' }, { created_by: 1 }), false);
   assert.equal(canEdit({ id: 3, role: 'jefe' }, { created_by: 1 }), true);
   assert.equal(canEdit({ id: 1, role: 'admin_rrhh' }, { created_by: 1 }), false);
+});
+
+test('pickVariant al cambiar de variante toma los precios de la nueva', () => {
+  const opts = variantOptions([{ name: 'B', variants: [
+    { id: 1, dimensions: ['100'], unit_price: 15, unit_cost: 9 },
+    { id: 2, dimensions: ['150'], unit_price: 20, unit_cost: null },
+  ] }]);
+  const first = pickVariant({ product_name: 'B 100', unit_price: '', unit_cost: '' }, opts);
+  const typing = pickVariant({ ...first, product_name: 'B 1' }, opts);  // al teclear se pasa por textos que no encajan
+  const second = pickVariant({ ...typing, product_name: 'B 150' }, opts);
+  assert.deepEqual([second.variant_id, second.unit_price, second.unit_cost], [2, '20', '']);
+});
+
+test('pickVariant al cambiar de variante respeta un precio escrito a mano', () => {
+  const opts = variantOptions([{ name: 'B', variants: [
+    { id: 1, dimensions: ['100'], unit_price: 15, unit_cost: 9 },
+    { id: 2, dimensions: ['150'], unit_price: 20, unit_cost: 12 },
+  ] }]);
+  const first = pickVariant({ product_name: 'B 100', unit_price: '', unit_cost: '' }, opts);
+  const second = pickVariant({ ...first, unit_price: '16', product_name: 'B 150' }, opts);
+  assert.deepEqual([second.unit_price, second.unit_cost], ['16', '12']);
 });

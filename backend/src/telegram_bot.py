@@ -92,19 +92,21 @@ class OrderBot:
             except Exception:
                 log.exception("Fallo al interpretar el mensaje")
                 return self.send(chat_id, "No he podido entender el mensaje. Prueba otra vez.")
-            draft.items = [self._fill(session, it) for it in draft.items]
-            self.pending[chat_id] = draft
-            missing = find_missing(draft, clients)
+            self.pending[chat_id] = draft  # sin los datos del catálogo: si cambia la variante, no arrastra precios viejos
+            filled = self._filled(session, draft)
+            missing = find_missing(filled, clients)
             if missing:
                 return self.send(chat_id, "\n".join(missing) + "\nRespóndeme con lo que falta o /cancelar.")
-            self.send(chat_id, summary(draft, clients), KEYBOARD)
+            self.send(chat_id, summary(filled, clients), KEYBOARD)
 
     @staticmethod
-    def _fill(session, item):
-        try:
-            return fill_from_variant(session, item)
-        except OrderError:  # Gemini inventó un variant_id: se trata como producto libre
-            return item.model_copy(update={"variant_id": None})
+    def _filled(session, draft: OrderDraft) -> OrderDraft:
+        def fill(item):
+            try:
+                return fill_from_variant(session, item)
+            except OrderError:  # Gemini inventó un variant_id: se trata como producto libre
+                return item.model_copy(update={"variant_id": None})
+        return draft.model_copy(update={"items": [fill(it) for it in draft.items]})
 
     def _on_button(self, query: dict):
         self.tg.call("answerCallbackQuery", callback_query_id=query["id"])
@@ -120,6 +122,7 @@ class OrderBot:
         with Session(self.engine) as session:
             user = self._erp_user(session)
             clients = clients_for(session, user) if user else []
+            draft = self._filled(session, draft)
             if not user or find_missing(draft, clients):
                 return self.send(chat_id, "El pedido ya no es válido. Mándamelo otra vez.")
             done = []

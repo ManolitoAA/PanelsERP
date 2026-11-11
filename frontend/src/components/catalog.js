@@ -6,10 +6,10 @@ export const variantLabel = (product, v) =>
 export const variantOptions = products =>
   products.flatMap(p => p.variants.map(v => ({ label: variantLabel(p, v), variant: v })));
 
-const filled = (current, fromCatalog) =>
-  current !== '' && current != null ? current : (fromCatalog == null ? '' : String(fromCatalog));
+const asField = value => (value == null ? '' : String(value));
 
-// Si el texto del producto coincide con una variante, la vincula y rellena precio y coste vacíos.
+// Si el texto del producto coincide con una variante, la vincula y rellena precio y coste.
+// Un campo se rellena si está vacío o aún tiene lo que puso el catálogo (line.auto); lo escrito a mano manda.
 export function pickVariant(line, options) {
   const match = options.find(o => o.label === line.product_name);
   if (!match) {
@@ -17,7 +17,16 @@ export function pickVariant(line, options) {
     return rest;
   }
   const v = match.variant;
-  return { ...line, variant_id: v.id, unit_price: filled(line.unit_price, v.unit_price), unit_cost: filled(line.unit_cost, v.unit_cost) };
+  const auto = line.auto || {};
+  const next = { ...line, variant_id: v.id, auto: {} };
+  for (const k of ['unit_price', 'unit_cost']) {
+    const current = line[k] ?? '';
+    if (current === '' || current === auto[k]) {
+      next[k] = asField(v[k]);
+      next.auto[k] = next[k];
+    }
+  }
+  return next;
 }
 
 export const pendingDecisions = preview =>

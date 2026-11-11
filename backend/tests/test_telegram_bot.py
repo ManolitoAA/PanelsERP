@@ -200,5 +200,22 @@ def test_bot_ignores_invented_variant_and_still_fills_valid_one(make_bot, db_ses
                                             DraftItem(product_name="Bolardo", quantity=2, variant_id=7)])
     bot = make_bot(draft)
     bot.handle_update(text_msg("pedido"))
-    items = bot.pending[1].items
-    assert items[0].variant_id is None and items[1].unit_cost == 9
+    msg = bot.tg.sent()[0]["text"]
+    assert "1 × Inventado a 5.00 €" in msg and "2 × Bolardo a 15.00 € (coste 9.00 €)" in msg
+
+
+def test_bot_changing_variant_takes_new_prices(make_bot, db_session):
+    from src.catalog_models import Product, ProductVariant
+    db_session.add(Product(id=1, name="BOLARDO PCK", created_by=1))
+    db_session.add(ProductVariant(id=7, product_id=1, dimensions=["100"], unit_price=15, unit_cost=9, created_by=1))
+    db_session.add(ProductVariant(id=8, product_id=1, dimensions=["150"], unit_price=20, unit_cost=12, created_by=1))
+    db_session.commit()
+    first = OrderDraft(client_id=10, items=[DraftItem(product_name="Bolardo 100", quantity=2, variant_id=7)])
+    bot = make_bot(first, first)
+    bot.handle_update(text_msg("2 bolardos de 100"))
+    assert bot.pending[1].items[0].unit_price is None  # lo del catálogo no se guarda en el borrador
+    # Gemini cambia la variante a partir del borrador anterior, que no lleva los precios de la 7
+    bot.genai.replies = [OrderDraft(client_id=10, items=[DraftItem(product_name="Bolardo 150", quantity=2, variant_id=8)])]
+    bot.handle_update(text_msg("mejor de 150"))
+    assert '"unit_price":null' in bot.genai.calls[1]["contents"][0]
+    assert "2 × Bolardo 150 a 20.00 € (coste 12.00 €)" in bot.tg.sent()[1]["text"]

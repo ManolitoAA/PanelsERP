@@ -15,9 +15,9 @@ EDITORS = (RoleEnum.COMERCIAL, RoleEnum.JEFE)
 
 def normalize(text: Optional[str]) -> str:
     """'Ø 1.500' y '1500', 'GUARDARRAÍL' y 'guardarrail' dan la misma clave."""
-    s = unicodedata.normalize("NFKD", (text or "").lower().replace("ø", ""))
+    s = unicodedata.normalize("NFKD", (text or "").lower().replace("ø", "").replace("⌀", ""))
     s = "".join(c for c in s if not unicodedata.combining(c))
-    s = re.sub(r"(?<=\d)\.(?=\d{3}\b)", "", s)  # punto de miles
+    s = re.sub(r"(?<=\d)\.(?=\d{3}(?!\d))", "", s)  # punto de miles
     return re.sub(r"\s+", "", s)
 
 
@@ -145,8 +145,8 @@ def fill_from_variant(session: Session, item: T) -> T:
     variant = session.get(ProductVariant, item.variant_id)
     if not variant:
         raise OrderError(404, "Variant not found")
-    return item.model_copy(update={k: getattr(variant, k) for k in ("unit_price", "unit_cost")
-                                   if getattr(item, k) is None})
+    fields = ("unit_cost",) if getattr(item, "margin_pct", None) is not None else ("unit_price", "unit_cost")
+    return item.model_copy(update={k: getattr(variant, k) for k in fields if getattr(item, k) is None})
 
 
 def catalog_text(session: Session) -> str:
